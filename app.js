@@ -15,7 +15,7 @@ db.connectDatabase();
 //This is where we will place our ROUTERS
 const userRouter = require('./API/routers/user_router'); //RECHECK LATER
 const consultationRouter = require('./API/routers/consultation_router');
-
+const appointmentRouter = require('./API/routers/appointment_router');
 
 //Define SETTING for BODY-PARSER and MORGAN
 app.use(morgan('dev')); // sa development phase lang gagamitin si Morgan; mag l'log lang ng reqests and reponses kapag nag d'develop
@@ -41,7 +41,8 @@ app.use((req, res, next) => { // NOTE: next - param; callback function
 //Define our MODULE ENDPOINT + the ROUTER
 // /users
 app.use('/users', userRouter);
-app.use('/consultations', consultationRouter); // RECHECK LATER
+app.use('/consultations', consultationRouter);
+app.use('/appointments', appointmentRouter); // RECHECK LATER
 // /users/add-user -> final endpoint
 
 
