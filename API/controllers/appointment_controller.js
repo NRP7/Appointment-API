@@ -66,6 +66,37 @@ const bookAppointment = (req, res, next) => {
 
 }
 
+const viewAllAppointments = (req, res, next) => {
+
+    let appointmentSelectQuery = `SELECT name AS Psychologist, (SELECT name AS Patient FROM users u WHERE u.id = s.patient_id) AS Patient, reserved_at AS Reservation FROM users u
+    JOIN schedules s ON u.id = s.psychologist_id`;
+
+    database.db.query(appointmentSelectQuery, (selectErr, selectRows, selectResult) => {
+
+        if(selectErr){
+            res.status(500).json({
+                successful: false,
+                message: selectErr
+            });
+        }
+        else if(selectRows.length == 0){
+            res.status(200).json({
+                successful: true,
+                message:"No appointment available in the database."
+            });
+        }
+        else{
+            res.status(200).json({
+                successful: true,
+                message: "Successfully got all appointments",
+                data: selectRows
+            });
+        }
+    });
+
+}
+
 module.exports = {
-    bookAppointment
+    bookAppointment,
+    viewAllAppointments
 }
