@@ -63,7 +63,7 @@ const addUser = (req, res, next) => {
 }
 
 const viewAllUsers = (req, res, next) => {
-    let userSelectQuery = `SELECT role_num as role, name, birthdate, gender, address, email, contact_number FROM users`;
+    let userSelectQuery = `SELECT role_num AS Status, name AS Name, birthdate AS 'Birth Date', gender AS Gender, address AS Address, email AS Email, contact_number AS 'Contact Number' FROM users`;
     
     database.db.query(userSelectQuery, (selectErr, selectRows, selectResult) => {
 
@@ -83,11 +83,11 @@ const viewAllUsers = (req, res, next) => {
 
             for(let i in selectRows){
 
-                if(selectRows[i].role == 0){
-                    selectRows[i].role = "Psychologist";
+                if(selectRows[i].Status == 0){
+                    selectRows[i].Status = "Psychologist";
                 }
                 else {
-                    selectRows[i].role = "Patient";
+                    selectRows[i].Status = "Patient";
                 }
             }
 
