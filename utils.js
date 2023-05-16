@@ -17,6 +17,20 @@ function checkMandatoryFields(fieldsArr){
 
 }
 
+function isSameId(psychologist_id, patient_id){
+
+    result = false;
+
+    if(psychologist_id === patient_id){
+        return result;
+    }
+    
+    result = true;
+    return result;
+
+}
+
 module.exports = {
-    checkMandatoryFields
+    checkMandatoryFields,
+    isSameId
 }
