@@ -14,8 +14,16 @@ const bookAppointment = (req, res, next) => {
             message: "An appointment credential is not defined."
         });
     }
+
+    if(!utils.isSameId(psychologist_id, patient_id)){
+        res.status(400).json({
+            successful: false,
+            message: "The same ID is entered in both psychologist and patient fields."
+        });
+    }
+    
     else {
-        let scheduleSelectQuery = `SELECT psychologist_id, patient_id, reserved_at FROM schedules WHERE psychologist_id = ${psychologist_id} AND patient_id = ${patient_id} AND HOUR(timediff(current_timestamp(), '${reserved_at}')) <= 3`;
+        let scheduleSelectQuery = `SELECT psychologist_id, patient_id, reserved_at FROM schedules WHERE psychologist_id = ${psychologist_id} AND patient_id = ${patient_id} AND reserved_at = '${reserved_at}'`;
 
         database.db.query(scheduleSelectQuery, (selectErr, selectRows, selectResult) => {
             if(selectErr){
@@ -28,12 +36,12 @@ const bookAppointment = (req, res, next) => {
                 if(selectRows.length > 0) {
                     res.status(400).json({
                         sucessful: false,
-                        message: "Schedule already exists within a 3-hour timeframe."
+                        message: "Schedule already exists."
                     });
+                    console.log(selectRows);
                 }
                 else{
                     let scheduleInsertQuery = `INSERT INTO schedules SET ?`;
-
                     let scheduleObj = appointmentModel.schedule_model(psychologist_id, patient_id, reserved_at);
 
                     database.db.query(scheduleInsertQuery, scheduleObj, (insertErr, insertRows, insertResult) => {
