@@ -61,8 +61,47 @@ const addUser = (req, res, next) => {
     }
 
 }
+
+const viewAllUsers = (req, res, next) => {
+    let userSelectQuery = `SELECT role_num as role, name, birthdate, gender, address, email, contact_number FROM users`;
+    
+    database.db.query(userSelectQuery, (selectErr, selectRows, selectResult) => {
+
+        if(selectErr){
+            res.status(500).json({
+                successful: false,
+                message: selectErr
+            });
+        }
+        else if(selectRows.length == 0){
+            res.status(200).json({
+                successful: true,
+                message:"No users available in the database."
+            });
+        }
+        else{
+
+            for(let i in selectRows){
+
+                if(selectRows[i].role == 0){
+                    selectRows[i].role = "Psychologist";
+                }
+                else {
+                    selectRows[i].role = "Patient";
+                }
+            }
+
+            res.status(200).json({
+                successful: true,
+                message: "Successfully got all users",
+                data: selectRows
+            });
+        }
+    });
+}
     
 
 module.exports = {
-    addUser
+    addUser,
+    viewAllUsers
 }
