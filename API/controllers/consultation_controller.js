@@ -16,6 +16,14 @@ const addConsultation = (req, res, next) => {
             message: "A consultation credential is not defined."
         });
     }
+
+    if(!utils.isSameId(psychologist_id, patient_id)){
+        res.status(400).json({
+            successful: false,
+            message: "The same ID is entered in both psychologist and patient fields."
+        });
+    }
+    
     else{
         let diagnosisSelectQuery = `SELECT psychologist_id, patient_id, illness_id, diagnosed_at FROM diagnoses WHERE psychologist_id = ${psychologist_id} AND patient_id = ${patient_id} AND illness_id = ${illness_id} AND diagnosed_at = '${diagnosed_at}'`;
         
