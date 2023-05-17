@@ -4,20 +4,20 @@ const utils = require('../../utils');
 
 const addConsultation = (req, res, next) => {
 
-    let psychologist_id = req.body.psychologist_id;
-    let patient_id = req.body.patient_id;
-    let illness_id = req.body.illness_id;
-    let diagnosed_at = req.body.diagnosed_at;
+    let psychologistId = req.body.psychologist_id;
+    let patientId = req.body.patient_id;
+    let illnessId = req.body.illness_id;
+    let diagnosedAt = req.body.diagnosed_at;
     let note = req.body.note;
 
-    if(!utils.checkMandatoryFields([psychologist_id, patient_id, illness_id, diagnosed_at, note])){
+    if(!utils.checkMandatoryFields([psychologistId, patientId, illnessId, diagnosedAt, note])){
         res.status(404).json({
             successful: false,
             message: "A consultation credential is not defined."
         });
     }
 
-    if(!utils.isSameId(psychologist_id, patient_id)){
+    if(!utils.isSameId(psychologistId, patientId)){
         res.status(400).json({
             successful: false,
             message: "The same ID is entered in both psychologist and patient fields."
@@ -25,7 +25,7 @@ const addConsultation = (req, res, next) => {
     }
     
     else{
-        let diagnosisSelectQuery = `SELECT psychologist_id, patient_id, illness_id, diagnosed_at FROM diagnoses WHERE psychologist_id = ${psychologist_id} AND patient_id = ${patient_id} AND illness_id = ${illness_id} AND diagnosed_at = '${diagnosed_at}'`;
+        let diagnosisSelectQuery = `SELECT psychologist_id, patient_id, illness_id, diagnosed_at FROM diagnoses WHERE psychologist_id = ${psychologistId} AND patient_id = ${patientId} AND illness_id = ${illnessId} AND diagnosed_at = '${diagnosedAt}'`;
         
 
         database.db.query(diagnosisSelectQuery, (selectErr, selectRows, selectResult) => {
@@ -44,7 +44,7 @@ const addConsultation = (req, res, next) => {
                 }
                 else{
                     let diagnosisInsertQuery = `INSERT INTO diagnoses SET ?`;
-                    let diagnosisObj = consultationModel.diagnosis_model(psychologist_id, patient_id, illness_id, diagnosed_at, note);
+                    let diagnosisObj = consultationModel.diagnosis_model(psychologistId, patientId, illnessId, diagnosedAt, note);
 
                     database.db.query(diagnosisInsertQuery, diagnosisObj, (insertErr, insertRows, insertResult) => {
                         if(insertErr){
@@ -68,19 +68,30 @@ const addConsultation = (req, res, next) => {
 }
 
 const viewConsultationResult = (req, res, next) => {
-    const consultationId = req.params.id;
+    //const consultationId = req.params.id;
+    const psychologistId = req.params.psychologist_id;
+    const patientId = req.params.patient_id;
 
-    if(!utils.checkMandatoryField(consultationId)){
+    if(!utils.checkMandatoryField([psychologistId, patientId])){
         res.status(404).json({
             successful: false,
             message: "Consultation id is missing."
         });
     }
+
+    if(!utils.isSameId(psychologistId, patientId)){
+        res.status(400).json({
+            successful: false,
+            message: "The same ID is entered in both psychologist and patient fields."
+        });
+    }
+
     else{
         let consultationViewQuery = `SELECT u.name AS Psychologist, (SELECT name AS Patient FROM users u WHERE u.id = d.patient_id) AS Patient, i.name AS Illness, d.diagnosed_at AS 'Date and Time', d.note AS Note FROM users u
         JOIN diagnoses d ON u.id = d.psychologist_id
         JOIN illnesses i ON d.illness_id = i.id
-        WHERE d.id = ${consultationId}`;
+        WHERE d.psychologist_id = ${psychologistId} AND d.patient_id = ${patientId}`;
+        //WHERE d.id = ${consultationId}`;
 
         database.db.query(consultationViewQuery, (viewErr, viewRows, viewResult) => {
 
