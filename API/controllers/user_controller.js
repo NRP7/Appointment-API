@@ -4,16 +4,16 @@ const utils = require('../../utils');
 
 const addUser = (req, res, next) => {
 
-    let role_num = req.body.role_num;
+    let roleNum = req.body.role_num;
     let name =  req.body.name;
     let birthDate = req.body.birthdate;
     let gender = req.body.gender;
     let address = req.body.address;
     let email = req.body.email;
-    let contact_number = req.body.contact_number;
+    let contactNumber = req.body.contact_number;
 
 
-    if(!utils.checkMandatoryFields([role_num, name, birthDate, gender, address, email, contact_number])) {
+    if(!utils.checkMandatoryFields([roleNum, name, birthDate, gender, address, email, contactNumber])) {
         res.status(404).json({
             successful: false,
             message: "A user credential is not defined."
@@ -38,7 +38,7 @@ const addUser = (req, res, next) => {
                 }
                 else{
                     let userInsertQuery = `INSERT INTO users SET ?`;
-                    let userObj = userModel.user_model(role_num, name, birthDate, gender, address, email, contact_number);
+                    let userObj = userModel.user_model(roleNum, name, birthDate, gender, address, email, contactNumber);
 
                     database.db.query(userInsertQuery, userObj, (insertErr, insertRows, insertResult) => {
                         if(insertErr){
