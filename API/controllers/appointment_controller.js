@@ -4,18 +4,18 @@ const utils = require('../../utils');
 
 const bookAppointment = (req, res, next) => {
 
-    let psychologist_id = req.body.psychologist_id;
-    let patient_id = req.body.patient_id;
-    let reserved_at = req.body.reserved_at;
+    let psychologistId = req.body.psychologist_id;
+    let patientId = req.body.patient_id;
+    let reservedAt = req.body.reserved_at;
 
-    if(!utils.checkMandatoryFields([psychologist_id, patient_id, reserved_at])) {
+    if(!utils.checkMandatoryFields([psychologistId, patientId, reservedAt])) {
         res.status(404).json({
             successful: false,
             message: "An appointment credential is not defined."
         });
     }
 
-    if(!utils.isSameId(psychologist_id, patient_id)){
+    if(!utils.isSameId(psychologistId, patientId)){
         res.status(400).json({
             successful: false,
             message: "The same ID is entered in both psychologist and patient fields."
@@ -23,7 +23,7 @@ const bookAppointment = (req, res, next) => {
     }
     
     else {
-        let scheduleSelectQuery = `SELECT psychologist_id, patient_id, reserved_at FROM schedules WHERE psychologist_id = ${psychologist_id} AND patient_id = ${patient_id} AND reserved_at = '${reserved_at}'`;
+        let scheduleSelectQuery = `SELECT psychologist_id, patient_id, reserved_at FROM schedules WHERE psychologist_id = ${psychologistId} AND patient_id = ${patientId} AND reserved_at = '${reservedAt}'`;
 
         database.db.query(scheduleSelectQuery, (selectErr, selectRows, selectResult) => {
             if(selectErr){
@@ -42,7 +42,7 @@ const bookAppointment = (req, res, next) => {
                 }
                 else{
                     let scheduleInsertQuery = `INSERT INTO schedules SET ?`;
-                    let scheduleObj = appointmentModel.schedule_model(psychologist_id, patient_id, reserved_at);
+                    let scheduleObj = appointmentModel.schedule_model(psychologistId, patientId, reservedAt);
 
                     database.db.query(scheduleInsertQuery, scheduleObj, (insertErr, insertRows, insertResult) => {
                         if(insertErr){
