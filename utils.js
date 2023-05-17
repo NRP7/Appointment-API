@@ -7,7 +7,7 @@ function checkMandatoryFields(fieldsArr){
             return result;
         }
 
-        if ((fieldsArr[i] == "" && (typeof(fieldsArr[i]) == "string")) || (fieldsArr[i] == 0 && (typeof(fieldsArr[i]) == "number"))){
+        if ((fieldsArr[i] == "" && (typeof(fieldsArr[i]) == "string"))){
             return result;
         }
     }
