@@ -108,7 +108,8 @@ const viewUser = (req, res, next) => {
     if(!utils.checkMandatoryField(username)){
         res.status(404).json({
             successful: false,
-            message: "User id is missing."
+            //message: "User id is missing."
+            message: "User name is missing."
         });
     }
     else {
@@ -129,7 +130,8 @@ const viewUser = (req, res, next) => {
             else if(selectRows.length == 0){
                 res.status(200).json({
                     successful: true,
-                    message:"User id does not exist."
+                    //message:"User id does not exist."
+                    message:"User name does not exist."
                 });
             }
             else{
@@ -223,13 +225,13 @@ const updateUserDetail = (req, res, next) => {
     }
 }
 
-const deleteUser = (res, req, next) => {
+const deleteUser = (req, res, next) => {
     let userId = req.params.id;
 
     if(!utils.checkMandatoryField(userId)){
         res.status(404).json({
             successful: false,
-            message: "Product id is missing."
+            message: "User id is missing."
         });
 
     }
