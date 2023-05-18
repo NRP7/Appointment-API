@@ -5,7 +5,7 @@ const utils = require('../../utils');
 const addUser = (req, res, next) => {
 
     let roleNum = req.body.role_num;
-    let name =  req.body.name;
+    let username =  req.body.username;
     let birthDate = req.body.birthdate;
     let gender = req.body.gender;
     let address = req.body.address;
@@ -13,14 +13,14 @@ const addUser = (req, res, next) => {
     let contactNumber = req.body.contact_number;
 
 
-    if(!utils.checkMandatoryFields([roleNum, name, birthDate, gender, address, email, contactNumber])) {
+    if(!utils.checkMandatoryFields([roleNum, username, birthDate, gender, address, email, contactNumber])) {
         res.status(404).json({
             successful: false,
             message: "A user credential is not defined."
         });
     }
     else {
-        let userSelectQuery = `SELECT name FROM users WHERE name = '${name}'`;
+        let userSelectQuery = `SELECT username FROM users WHERE username = '${username}'`;
 
         database.db.query(userSelectQuery, (selectErr,  selectRows, selectResult) => {
             if(selectErr){
@@ -38,7 +38,7 @@ const addUser = (req, res, next) => {
                 }
                 else{
                     let userInsertQuery = `INSERT INTO users SET ?`;
-                    let userObj = userModel.user_model(roleNum, name, birthDate, gender, address, email, contactNumber);
+                    let userObj = userModel.user_model(roleNum, username, birthDate, gender, address, email, contactNumber);
 
                     database.db.query(userInsertQuery, userObj, (insertErr, insertRows, insertResult) => {
                         if(insertErr){
@@ -63,7 +63,7 @@ const addUser = (req, res, next) => {
 }
 
 const viewAllUsers = (req, res, next) => {
-    let usersSelectQuery = `SELECT role_num AS Status, name AS Name, birthdate AS 'Birth Date', gender AS Gender, address AS Address, email AS Email, contact_number AS 'Contact Number' FROM users`;
+    let usersSelectQuery = `SELECT role_num AS Status, username AS Name, birthdate AS 'Birth Date', gender AS Gender, address AS Address, email AS Email, contact_number AS 'Contact Number' FROM users`;
     
     database.db.query(usersSelectQuery, (selectErr, selectRows, selectResult) => {
 
@@ -103,20 +103,20 @@ const viewAllUsers = (req, res, next) => {
 const viewUser = (req, res, next) => {
     //const userId = req.params.id;
 
-    const userName = req.params.name;
+    const username = req.params.username;
 
-    if(!utils.checkMandatoryField(userName)){
+    if(!utils.checkMandatoryField(username)){
         res.status(404).json({
             successful: false,
             message: "User id is missing."
         });
     }
     else {
-        // let userSelectQuery = `SELECT role_num AS Status, name AS Name, birthdate AS 'Birth Date', gender AS Gender, address AS Address, email AS Email, contact_number AS 'Contact Number' FROM users u WHERE u.id = ${userId}`;
+        // let userSelectQuery = `SELECT role_num AS Status, username AS Name, birthdate AS 'Birth Date', gender AS Gender, address AS Address, email AS Email, contact_number AS 'Contact Number' FROM users u WHERE u.id = ${userId}`;
 
-        let userSelectQuery = `SELECT role_num AS Status, name AS Name, birthdate AS 'Birth Date', gender AS Gender, address AS Address, email AS Email, contact_number AS 'Contact Number' 
+        let userSelectQuery = `SELECT role_num AS Status, username AS Name, birthdate AS 'Birth Date', gender AS Gender, address AS Address, email AS Email, contact_number AS 'Contact Number' 
         FROM users u 
-        WHERE u.name LIKE '%${userName}%'`;
+        WHERE u.username LIKE '%${username}%'`;
     
         database.db.query(userSelectQuery, (selectErr, selectRows, selectResult) => {
 
@@ -158,21 +158,21 @@ const updateUserDetail = (req, res, next) => {
 
     const userId = req.params.id;
 
-    let name = req.body.name;
+    let username = req.body.username;
     let birthDate = req.body.birthdate;
     let gender = req.body.gender;
     let address = req.body.address;
     let email = req.body.email;
     let contactNumber = req.body.contact_number;
 
-    if(!utils.checkMandatoryFields([userId, name, birthDate, gender, address, email, contactNumber])){
+    if(!utils.checkMandatoryFields([userId, username, birthDate, gender, address, email, contactNumber])){
         res.status(404).json({
             successful: false,
             message: "A user credential is not defined."
         });
     }
 
-    if(!utils.isString([name, birthDate, gender, address, email, contactNumber])){
+    if(!utils.isString([username, birthDate, gender, address, email, contactNumber])){
         res.status(400).json({
             successful: false,
             message: "Incorrect user credential format."
@@ -190,7 +190,7 @@ const updateUserDetail = (req, res, next) => {
             else{
                 if(selectRows.length > 0){
                     //ALLOW THE UPDATING OF PRODUCT QUANTITY
-                    let userUpdateQuery = `UPDATE users SET name = '${name}', birthdate = '${birthDate}', gender = '${gender}', address = '${address}', email = '${email}', contact_number = '${contactNumber}' WHERE id = ${userId}`;
+                    let userUpdateQuery = `UPDATE users SET username = '${username}', birthdate = '${birthDate}', gender = '${gender}', address = '${address}', email = '${email}', contact_number = '${contactNumber}' WHERE id = ${userId}`;
 
                     database.db.query(userUpdateQuery, (updateErr, updateRows, updateResult) => {
                         if(updateErr){
