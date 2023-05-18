@@ -87,7 +87,7 @@ const viewConsultationResult = (req, res, next) => {
     }
 
     else{
-        let consultationViewQuery = `SELECT u.name AS Psychologist, (SELECT name AS Patient FROM users u WHERE u.id = d.patient_id) AS Patient, i.name AS Illness, d.diagnosed_at AS 'Date and Time', d.note AS Note FROM users u
+        let consultationViewQuery = `SELECT u.username AS Psychologist, (SELECT username AS Patient FROM users u WHERE u.id = d.patient_id) AS Patient, i.name AS Illness, d.diagnosed_at AS 'Date and Time', d.note AS Note FROM users u
         JOIN diagnoses d ON u.id = d.psychologist_id
         JOIN illnesses i ON d.illness_id = i.id
         WHERE d.psychologist_id = ${psychologistId} AND d.patient_id = ${patientId}`;
