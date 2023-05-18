@@ -103,7 +103,7 @@ const viewConsultationResult = (req, res, next) => {
             }
             else if(viewRows.length == 0){
                 res.status(400).json({
-                    successful: true,
+                    successful: false,
                     message: "Consultation id does not exist."
                 });
             }
