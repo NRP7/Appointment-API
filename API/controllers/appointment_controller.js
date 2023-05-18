@@ -68,7 +68,7 @@ const bookAppointment = (req, res, next) => {
 
 const viewAllAppointments = (req, res, next) => {
 
-    let appointmentSelectQuery = `SELECT name AS Psychologist, (SELECT name AS Patient FROM users u WHERE u.id = s.patient_id) AS Patient, reserved_at AS Reservation FROM users u
+    let appointmentSelectQuery = `SELECT username AS Psychologist, (SELECT username AS Patient FROM users u WHERE u.id = s.patient_id) AS Patient, reserved_at AS Reservation FROM users u
     JOIN schedules s ON u.id = s.psychologist_id`;
 
     database.db.query(appointmentSelectQuery, (selectErr, selectRows, selectResult) => {
