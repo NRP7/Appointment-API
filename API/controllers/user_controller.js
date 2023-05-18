@@ -221,9 +221,56 @@ const updateUserDetail = (req, res, next) => {
             }
         });
     }
+}
 
+const deleteUser = (res, req, next) => {
+    let userId = req.params.id;
 
+    if(!utils.checkMandatoryField(userId)){
+        res.status(404).json({
+            successful: false,
+            message: "Product id is missing."
+        });
 
+    }
+    else{
+        let userSelectQuery = `SELECT id FROM users WHERE id = ${userId}`;
+
+        database.db.query(userSelectQuery, (selectErr, selectRows, selectResult) => {
+            if(selectErr){
+                res.status(500).json({
+                    successful: false,
+                    message: selectErr
+                });
+            }
+            else{
+                if(selectRows.length > 0){
+                    let userDeleteQuery = `DELETE FROM users WHERE id = ${userId}`;
+
+                    database.db.query(userDeleteQuery, (deleteErr, deleteRows, deleteResult) => {
+                        if(deleteErr){
+                            res.status(500).json({
+                                successful: false,
+                                message: deleteErr
+                            });
+                        }
+                        else{
+                            res.status(200).json({
+                                successful: true,
+                                message: "Successfully deleted a user."
+                            });
+                        }
+                    });
+                }
+                else{
+                    res.status(400).json({
+                        successful: false,
+                        message: "User id does not exist."
+                    });
+                }
+            }
+        });
+    }
 }
     
 
@@ -231,5 +278,6 @@ module.exports = {
     addUser,
     viewAllUsers,
     viewUser,
-    updateUserDetail
+    updateUserDetail,
+    deleteUser
 }
