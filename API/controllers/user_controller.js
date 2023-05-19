@@ -161,7 +161,7 @@ const viewUser = (req, res, next) => {
 
 const updateUserDetail = (req, res, next) => {
 
-    const userId = req.params.id;
+    const userUserName = req.params.username;
 
     let username = req.body.username;
     let userpass = req.body.userpass;
@@ -173,7 +173,7 @@ const updateUserDetail = (req, res, next) => {
     let email = req.body.email;
     let contactNumber = req.body.contact_number;
 
-    if(!utils.checkMandatoryFields([userId, username, userpass, firstName, lastName, birthdate, gender, address, email, contactNumber])){
+    if(!utils.checkMandatoryFields([userUserName, username, userpass, firstName, lastName, birthdate, gender, address, email, contactNumber])){
         res.status(404).json({
             successful: false,
             message: "A user credential is not defined."
@@ -187,7 +187,7 @@ const updateUserDetail = (req, res, next) => {
         });
     }
     else{
-        let userSelectQuery = `SELECT id FROM users WHERE id = ${userId}`;
+        let userSelectQuery = `SELECT username FROM users WHERE username = '${userUserName}'`;
         database.db.query(userSelectQuery, (selectErr, selectRows, selectResult) => {
             if(selectErr){
                 res.status(500).json({
@@ -197,8 +197,8 @@ const updateUserDetail = (req, res, next) => {
             }
             else{
                 if(selectRows.length > 0){
-                    //ALLOW THE UPDATING OF PRODUCT QUANTITY
-                    let userUpdateQuery = `UPDATE users SET username = '${username}', userpass = '${userpass}', first_name = '${firstName}', last_name = '${lastName}', birthdate = '${birthdate}', gender = '${gender}', address = '${address}', email = '${email}', contact_number = '${contactNumber}' WHERE id = ${userId}`;
+                    //ALLOW THE UPDATING OF USER DETAILS
+                    let userUpdateQuery = `UPDATE users SET username = '${username}', userpass = '${userpass}', first_name = '${firstName}', last_name = '${lastName}', birthdate = '${birthdate}', gender = '${gender}', address = '${address}', email = '${email}', contact_number = '${contactNumber}' WHERE username = '${userUserName}'`;
 
                     database.db.query(userUpdateQuery, (updateErr, updateRows, updateResult) => {
                         if(updateErr){
@@ -232,9 +232,9 @@ const updateUserDetail = (req, res, next) => {
 }
 
 const deleteUser = (req, res, next) => {
-    let userId = req.params.id;
+    let userUserName = req.params.username;
 
-    if(!utils.checkMandatoryField(userId)){
+    if(!utils.checkMandatoryField(userUserName)){
         res.status(404).json({
             successful: false,
             message: "User id is missing."
@@ -242,7 +242,7 @@ const deleteUser = (req, res, next) => {
 
     }
     else{
-        let userSelectQuery = `SELECT id FROM users WHERE id = ${userId}`;
+        let userSelectQuery = `SELECT username FROM users WHERE username = '${userUserName}'`;
 
         database.db.query(userSelectQuery, (selectErr, selectRows, selectResult) => {
             if(selectErr){
@@ -253,7 +253,7 @@ const deleteUser = (req, res, next) => {
             }
             else{
                 if(selectRows.length > 0){
-                    let userDeleteQuery = `DELETE FROM users WHERE id = ${userId}`;
+                    let userDeleteQuery = `DELETE FROM users WHERE username = '${userUserName}'`;
 
                     database.db.query(userDeleteQuery, (deleteErr, deleteRows, deleteResult) => {
                         if(deleteErr){
