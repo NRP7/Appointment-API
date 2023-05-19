@@ -77,14 +77,14 @@ const viewConsultationResult = (req, res, next) => {
     if(!utils.checkMandatoryField([psychologistUserName, patientUserName])){
         res.status(404).json({
             successful: false,
-            message: "Consultation id is missing."
+            message: "Consultation username is missing."
         });
     }
 
     if(!utils.isSameId(psychologistUserName, patientUserName)){
         res.status(400).json({
             successful: false,
-            message: "The same ID is entered in both psychologist and patient fields."
+            message: "The same username is entered in both psychologist and patient fields."
         });
     }
 
@@ -110,7 +110,7 @@ const viewConsultationResult = (req, res, next) => {
             else if(viewRows.length == 0){
                 res.status(400).json({
                     successful: false,
-                    message: "Consultation id does not exist."
+                    message: "Consultation username does not exist."
                 });
             }
             else{
