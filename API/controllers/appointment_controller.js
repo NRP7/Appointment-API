@@ -144,11 +144,11 @@ const updateAppointment = (req, res, next) => {
     if(!utils.isString([reservedAt])){
         res.status(400).json({
             successful: false,
-            message: "Incorrect user credential format."
+            message: "Incorrect reservation credential format."
         });
     }
 
-    else {
+    else{
         let appointmentSelectQuery = `SELECT id FROM schedules WHERE id = ${appointmentId}`;
 
         database.db.query(appointmentSelectQuery, (selectErr, selectRows, selectResult) => {
