@@ -11,4 +11,7 @@ consultationRouter.post('/add-consultation', consultationController.addConsultat
 // consultationRouter.get('/view-consultation-result/:psychologist_id/:patient_id', consultationController.viewConsultationResult);
 consultationRouter.get('/view-consultation-result/:psychologist_username/:patient_username', consultationController.viewConsultationResult);
 
+// PUT Method(s)
+consultationRouter.put('/update-consultation/:id', consultationController.updateConsultation);
+
 module.exports = consultationRouter;
