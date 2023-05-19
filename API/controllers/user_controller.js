@@ -66,7 +66,7 @@ const addUser = (req, res, next) => {
 }
 
 const viewAllUsers = (req, res, next) => {
-    let usersSelectQuery = `SELECT role_num AS Status, username AS Username, PASSWORD('userpass') AS Password, first_name AS 'First Name', last_name AS 'Last Name', birthdate AS 'Birth Date', gender AS Gender, address AS Address, email AS Email, contact_number AS 'Contact Number' FROM users`;
+    let usersSelectQuery = `SELECT role_num AS Status, username AS Username, PASSWORD('userpass') AS Password, first_name AS 'First Name', last_name AS 'Last Name', DATE_FORMAT(birthdate, '%Y-%m-%d') AS Birthdate, gender AS Gender, address AS Address, email AS Email, contact_number AS 'Contact Number' FROM users`;
     
     database.db.query(usersSelectQuery, (selectErr, selectRows, selectResult) => {
 
@@ -118,7 +118,7 @@ const viewUser = (req, res, next) => {
     else {
         // let userSelectQuery = `SELECT role_num AS Status, username AS Name, userpass AS Password, first_name AS 'First Name', last_name AS 'Last Name', birthdate AS 'Birth Date', gender AS Gender, address AS Address, email AS Email, contact_number AS 'Contact Number' FROM users u WHERE u.id = ${userId}`;
 
-        let userSelectQuery = `SELECT role_num AS Status, username AS Username, userpass AS Password, first_name AS 'First Name', last_name AS 'Last Name', birthdate AS 'Birth Date', gender AS Gender, address AS Address, email AS Email, contact_number AS 'Contact Number' 
+        let userSelectQuery = `SELECT role_num AS Status, username AS Username, userpass AS Password, first_name AS 'First Name', last_name AS 'Last Name', DATE_FORMAT(birthdate, '%Y-%m-%d') AS Birthdate, gender AS Gender, address AS Address, email AS Email, contact_number AS 'Contact Number' 
         FROM users u 
         WHERE u.username LIKE '%${username}%'`;
     
