@@ -125,11 +125,85 @@ const viewConsultationResult = (req, res, next) => {
             
         });
     }
+}
 
 
+const updateConsultation = (req, res, next) => {
+    let consultationId = req.params.id;
+
+    let psychologistId = req.body.psychologist_id;
+    let patientId = req.body.patient_id;
+    let illnessId = req.body.illness_id;
+    let diagnosedAt = req.body.diagnosed_at;
+    let note = req.body.note;
+
+    if(!utils.checkMandatoryFields([consultationId, psychologistId, patientId, illnessId, diagnosedAt, note])){
+        res.status(404).json({
+            successful: false,
+            message: "A consultation credential is not defined."
+        });
+        return;
+    }
+
+    if(!utils.isSameId(psychologistId, patientId)){
+        res.status(400).json({
+            successful: false,
+            message: "The same ID is entered in both psychologist and patient fields."
+        });
+        return;
+    }
+
+    if(!utils.isString([diagnosedAt, note])){
+        res.status(400).json({
+            successful: false,
+            message: "Incorrect consultation credential format."
+        });
+    }
+
+    else{
+        let diagnosisSelectQuery = `SELECT id FROM diagnoses WHERE id = ${consultationId}`;
+
+        database.db.query(diagnosisSelectQuery, (selectErr, selectRows, selectResult) => {
+            if(selectErr){
+                res.status(500).json({
+                    successful: false,
+                    message: selectErr
+                });
+            }
+            else{
+                if(selectRows.length > 0){
+                    let diagnosisUpdateQuery = `UPDATE diagnoses SET psychologist_id = ${psychologistId}, patient_id = ${patientId}, illness_id = ${illnessId}, diagnosed_at = '${diagnosedAt}', note = '${note}' WHERE id = ${consultationId}`;
+
+                    database.db.query(diagnosisUpdateQuery, (updateErr, updateRows, updateResult) => {
+                        if(updateErr){
+                            res.status(500).json({
+                                successful: false,
+                                message: updateErr
+                            });
+                        }
+                        else{
+                            res.status(200).json({
+                                successful: true,
+                                message: "Successfully updated consultation detail(s)."
+                            });
+
+                        }
+
+                    });
+                } 
+                else{
+                    res.status(400).json({
+                        successful: false,
+                        message: "Consultation does not exist."
+                    });
+                }
+            }
+        });
+    }
 }
 
 module.exports = {
     addConsultation,
-    viewConsultationResult
+    viewConsultationResult,
+    updateConsultation
 }
