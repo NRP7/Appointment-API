@@ -112,7 +112,7 @@ const viewUser = (req, res, next) => {
         res.status(404).json({
             successful: false,
             //message: "User id is missing."
-            message: "User name is missing."
+            message: "Username is missing."
         });
     }
     else {
@@ -134,7 +134,7 @@ const viewUser = (req, res, next) => {
                 res.status(200).json({
                     successful: true,
                     //message:"User id does not exist."
-                    message:"User name does not exist."
+                    message:"Username does not exist."
                 });
             }
             else{
@@ -237,7 +237,7 @@ const deleteUser = (req, res, next) => {
     if(!utils.checkMandatoryField(userUserName)){
         res.status(404).json({
             successful: false,
-            message: "User id is missing."
+            message: "Username is missing."
         });
 
     }
@@ -273,7 +273,7 @@ const deleteUser = (req, res, next) => {
                 else{
                     res.status(400).json({
                         successful: false,
-                        message: "User id does not exist."
+                        message: "Username does not exist."
                     });
                 }
             }
