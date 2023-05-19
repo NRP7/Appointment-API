@@ -15,6 +15,7 @@ const addConsultation = (req, res, next) => {
             successful: false,
             message: "A consultation credential is not defined."
         });
+        return;
     }
 
     if(!utils.isSameId(psychologistId, patientId)){
@@ -79,6 +80,7 @@ const viewConsultationResult = (req, res, next) => {
             successful: false,
             message: "Consultation username is missing."
         });
+        return;
     }
 
     if(!utils.isSameId(psychologistUserName, patientUserName)){
