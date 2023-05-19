@@ -23,46 +23,71 @@ const bookAppointment = (req, res, next) => {
     }
     
     else {
-        let scheduleSelectQuery = `SELECT psychologist_id, patient_id, reserved_at FROM schedules WHERE psychologist_id = ${psychologistId} AND patient_id = ${patientId} AND reserved_at = '${reservedAt}'`;
 
-        database.db.query(scheduleSelectQuery, (selectErr, selectRows, selectResult) => {
-            if(selectErr){
-                res.status(500).json({
-                    sucessful: false,
-                    message: selectErr
-                });
-            }
-            else{
-                if(selectRows.length > 0) {
-                    res.status(400).json({
-                        sucessful: false,
-                        message: "Schedule already exists."
-                    });
-                    console.log(selectRows);
-                }
-                else{
-                    let scheduleInsertQuery = `INSERT INTO schedules SET ?`;
-                    let scheduleObj = appointmentModel.schedule_model(psychologistId, patientId, reservedAt);
+        // let userRoleSelectQuery = `SELECT role_num FROM users WHERE id = ${psychologistId}`;
 
-                    database.db.query(scheduleInsertQuery, scheduleObj, (insertErr, insertRows, insertResult) => {
-                        if(insertErr){
-                            res.status(500).json({
-                                successful: false,
-                                message: insertErr
+        // database.db.query(userRoleSelectQuery, (roleErr, roleRows, roleResult) => {
+        //     if(roleErr){
+        //         res.status(500).json({
+        //             sucessful: false,
+        //             message: roleErr
+        //         });
+        //     }
+
+        //     if(roleRows[0].role_num == 1){
+        //         res.status(400).json({
+        //             sucessful: false,
+        //             message: "Role is not valid."
+        //         });
+        //     }
+        //     else{
+                let scheduleSelectQuery = `SELECT psychologist_id, patient_id, reserved_at FROM schedules WHERE psychologist_id = ${psychologistId} AND patient_id = ${patientId} AND reserved_at = '${reservedAt}'`;
+
+                database.db.query(scheduleSelectQuery, (selectErr, selectRows, selectResult) => {
+                    if(selectErr){
+                        res.status(500).json({
+                            sucessful: false,
+                            message: selectErr
+                        });
+                    }
+                    else{
+                        if(selectRows.length > 0) {
+                            res.status(400).json({
+                                sucessful: false,
+                                message: "Schedule already exists."
                             });
+                            console.log(selectRows);
                         }
                         else{
-                            res.status(200).json({
-                                successful: true,
-                                message: "Successfully booked a schedule."
+                            let scheduleInsertQuery = `INSERT INTO schedules SET ?`;
+                            let scheduleObj = appointmentModel.schedule_model(psychologistId, patientId, reservedAt);
+        
+                            database.db.query(scheduleInsertQuery, scheduleObj, (insertErr, insertRows, insertResult) => {
+                                if(insertErr){
+                                    res.status(500).json({
+                                        successful: false,
+                                        message: insertErr
+                                    });
+                                }
+                                else{
+                                    res.status(200).json({
+                                        successful: true,
+                                        message: "Successfully booked a schedule."
+                                    });
+                                }
                             });
                         }
-                    });
-                }
+                    }
+        
+                });
             }
 
-        });
-    }
+
+
+//         });
+
+        
+//     }
 
 }
 
