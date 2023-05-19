@@ -69,17 +69,19 @@ const addConsultation = (req, res, next) => {
 
 const viewConsultationResult = (req, res, next) => {
     //const consultationId = req.params.id;
-    const psychologistId = req.params.psychologist_id;
-    const patientId = req.params.patient_id;
+    // const psychologistId = req.params.psychologist_id;
+    // const patientId = req.params.patient_id;
+    const psychologistUserName = req.params.psychologist_username;
+    const patientUserName = req.params.patient_username;
 
-    if(!utils.checkMandatoryField([psychologistId, patientId])){
+    if(!utils.checkMandatoryField([psychologistUserName, patientUserName])){
         res.status(404).json({
             successful: false,
             message: "Consultation id is missing."
         });
     }
 
-    if(!utils.isSameId(psychologistId, patientId)){
+    if(!utils.isSameId(psychologistUserName, patientUserName)){
         res.status(400).json({
             successful: false,
             message: "The same ID is entered in both psychologist and patient fields."
@@ -87,11 +89,15 @@ const viewConsultationResult = (req, res, next) => {
     }
 
     else{
-        let consultationViewQuery = `SELECT CONCAT(first_name, ' ', last_name) AS Psychologist, (SELECT CONCAT(first_name, ' ', last_name) AS Patient FROM users u WHERE u.id = d.patient_id) AS Patient, i.name AS Illness, DATE_FORMAT(diagnosed_at, '%Y-%m-%d') AS Date, TIME(diagnosed_at) AS Time, d.note AS Note FROM users u
+        // let consultationViewQuery = `SELECT CONCAT(first_name, ' ', last_name) AS Psychologist, (SELECT CONCAT(first_name, ' ', last_name) AS Patient FROM users u WHERE u.id = d.patient_id) AS Patient, i.name AS Illness, DATE_FORMAT(diagnosed_at, '%Y-%m-%d') AS Date, TIME(diagnosed_at) AS Time, d.note AS Note FROM users u
+        // JOIN diagnoses d ON u.id = d.psychologist_id
+        // JOIN illnesses i ON d.illness_id = i.id
+        // WHERE d.psychologist_id = ${psychologistId} AND d.patient_id = ${patientId}`;
+        //WHERE d.id = ${consultationId}`;
+        let consultationViewQuery = `SELECT CONCAT(first_name, ' ', last_name) AS Psychologist, (SELECT CONCAT(first_name, ' ', last_name) AS Patient FROM users u WHERE d.patient_id = u.id) AS Patient, i.name AS Illness, DATE_FORMAT(diagnosed_at, '%Y-%m-%d') AS Date, TIME(diagnosed_at) AS Time, d.note AS Note FROM users u
         JOIN diagnoses d ON u.id = d.psychologist_id
         JOIN illnesses i ON d.illness_id = i.id
-        WHERE d.psychologist_id = ${psychologistId} AND d.patient_id = ${patientId}`;
-        //WHERE d.id = ${consultationId}`;
+        WHERE d.psychologist_id = u.id AND u.username = '${psychologistUserName}' AND d.patient_id = (SELECT id FROM users WHERE username = '${patientUserName}')`;
 
         database.db.query(consultationViewQuery, (viewErr, viewRows, viewResult) => {
 
