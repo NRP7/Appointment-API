@@ -9,4 +9,7 @@ appointmentRouter.post('/book-appointment', appointmentController.bookAppointmen
 // GET Method(s)
 appointmentRouter.get('/view-all', appointmentController.viewAllAppointments);
 
+// PUT Method(s)
+appointmentRouter.put('/update-appointment/:id', appointmentController.updateAppointment);
+
 module.exports = appointmentRouter;
