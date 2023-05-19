@@ -12,10 +12,10 @@ userRouter.get('/view-all', userController.viewAllUsers);
 userRouter.get('/view-user/:username', userController.viewUser);
 
 // PUT Method(s)
-userRouter.put('/update-user-detail/:id', userController.updateUserDetail);
+userRouter.put('/update-user-detail/:username', userController.updateUserDetail);
 
 // DELETE Method(s)
-userRouter.delete('/delete-user/:id', userController.deleteUser);
+userRouter.delete('/delete-user/:username', userController.deleteUser);
 
 module.exports = userRouter;
 
