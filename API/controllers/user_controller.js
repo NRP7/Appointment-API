@@ -178,6 +178,7 @@ const updateUserDetail = (req, res, next) => {
             successful: false,
             message: "A user credential is not defined."
         });
+        return;
     }
 
     if(!utils.isString([username, userpass, firstName, lastName, birthdate, gender, address, email, contactNumber])){
