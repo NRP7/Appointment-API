@@ -8,6 +8,7 @@ consultationRouter.post('/add-consultation', consultationController.addConsultat
 
 // GET Method(s)
 //consultationRouter.get('/view-consultation-result/:id', consultationController.viewConsultationResult);
-consultationRouter.get('/view-consultation-result/:psychologist_id/:patient_id', consultationController.viewConsultationResult);
+// consultationRouter.get('/view-consultation-result/:psychologist_id/:patient_id', consultationController.viewConsultationResult);
+consultationRouter.get('/view-consultation-result/:psychologist_username/:patient_username', consultationController.viewConsultationResult);
 
 module.exports = consultationRouter;
