@@ -8,7 +8,7 @@ const bookAppointment = (req, res, next) => {
     let patientId = req.body.patient_id;
     let reservedAt = req.body.reserved_at;
 
-    if(!utils.checkMandatoryFields([psychologistId, patientId, reservedAt])) {
+    if (!utils.checkMandatoryFields([psychologistId, patientId, reservedAt])) {
         res.status(404).json({
             successful: false,
             message: "An appointment credential is not defined."
@@ -16,7 +16,7 @@ const bookAppointment = (req, res, next) => {
         return;
     }
 
-    if(!utils.isSameId(psychologistId, patientId)){
+    if (!utils.isSameId(psychologistId, patientId)) {
         res.status(400).json({
             successful: false,
             message: "The same ID is entered in both psychologist and patient fields."
@@ -45,26 +45,26 @@ const bookAppointment = (req, res, next) => {
                 let scheduleSelectQuery = `SELECT psychologist_id, patient_id, reserved_at FROM schedules WHERE psychologist_id = ${psychologistId} AND patient_id = ${patientId} AND reserved_at = '${reservedAt}'`;
 
                 database.db.query(scheduleSelectQuery, (selectErr, selectRows, selectResult) => {
-                    if(selectErr){
+                    if (selectErr) {
                         res.status(500).json({
                             sucessful: false,
                             message: selectErr
                         });
                     }
                     else{
-                        if(selectRows.length > 0) {
+                        if (selectRows.length > 0) {
                             res.status(400).json({
                                 sucessful: false,
                                 message: "Schedule already exists."
                             });
                             console.log(selectRows);
                         }
-                        else{
+                        else {
                             let scheduleInsertQuery = `INSERT INTO schedules SET ?`;
                             let scheduleObj = appointmentModel.schedule_model(psychologistId, patientId, reservedAt);
         
                             database.db.query(scheduleInsertQuery, scheduleObj, (insertErr, insertRows, insertResult) => {
-                                if(insertErr){
+                                if (insertErr) {
                                     res.status(500).json({
                                         successful: false,
                                         message: insertErr
@@ -79,7 +79,6 @@ const bookAppointment = (req, res, next) => {
                             });
                         }
                     }
-        
                 });
             }
 //         });
@@ -89,24 +88,24 @@ const bookAppointment = (req, res, next) => {
 
 const viewAllAppointments = (req, res, next) => {
 
-    let appointmentSelectQuery = `SELECT CONCAT(first_name, ' ', last_name) AS Psychologist, (SELECT CONCAT(first_name, ' ', last_name) AS Patient FROM users u WHERE u.id = s.patient_id) AS Patient, DATE_FORMAT(reserved_at, '%Y-%m-%d') AS Date, TIME(reserved_at) AS Time FROM users u
+    let appointmentSelectQuery = `SELECT s.id AS Id, CONCAT(first_name, ' ', last_name) AS Psychologist, (SELECT CONCAT(first_name, ' ', last_name) AS Patient FROM users u WHERE u.id = s.patient_id) AS Patient, DATE_FORMAT(reserved_at, '%Y-%m-%d') AS Date, TIME(reserved_at) AS Time FROM users u
     JOIN schedules s ON u.id = s.psychologist_id`;
 
     database.db.query(appointmentSelectQuery, (selectErr, selectRows, selectResult) => {
 
-        if(selectErr){
+        if (selectErr) {
             res.status(500).json({
                 successful: false,
                 message: selectErr
             });
         }
-        else if(selectRows.length == 0){
+        else if (selectRows.length == 0) {
             res.status(200).json({
                 successful: true,
                 message:"No appointment available in the database."
             });
         }
-        else{
+        else {
             res.status(200).json({
                 successful: true,
                 message: "Successfully got all appointments",
@@ -125,7 +124,7 @@ const updateAppointment = (req, res, next) => {
     let patientId = req.body.patient_id;
     let reservedAt = req.body.reserved_at;
 
-    if(!utils.checkMandatoryFields([appointmentId, psychologistId, patientId, reservedAt])){
+    if (!utils.checkMandatoryFields([appointmentId, psychologistId, patientId, reservedAt])) {
         res.status(404).json({
             successful: false,
             message: "An appointment credential is not defined."
@@ -133,7 +132,7 @@ const updateAppointment = (req, res, next) => {
         return;
     }
 
-    if(!utils.isSameId(psychologistId, patientId)){
+    if (!utils.isSameId(psychologistId, patientId)) {
         res.status(400).json({
             successful: false,
             message: "The same ID is entered in both psychologist and patient fields."
@@ -141,45 +140,62 @@ const updateAppointment = (req, res, next) => {
         return;
     }
 
-    if(!utils.isString([reservedAt])){
+    if (!utils.isString([reservedAt])) {
         res.status(400).json({
             successful: false,
             message: "Incorrect reservation credential format."
         });
     }
 
-    else{
+    else {
         let appointmentSelectQuery = `SELECT id FROM schedules WHERE id = ${appointmentId}`;
-
+        
         database.db.query(appointmentSelectQuery, (selectErr, selectRows, selectResult) => {
-            if(selectErr){
+            if (selectErr) {
                 res.status(500).json({
                     successful: false,
                     message: selectErr
                 });
             }
-            else{
-                if(selectRows.length > 0){
-                    let appointmentUpdateQuery = `UPDATE schedules SET psychologist_id = ${psychologistId}, patient_id = ${patientId}, reserved_at = '${reservedAt}' WHERE id = ${appointmentId}`;
+            else {
+                if (selectRows.length > 0) {
 
-                    database.db.query(appointmentUpdateQuery, (updateErr, updateRows, updateResult) => {
-                        if(updateErr){
+                    let appointmentSelectAllQuery = `SELECT s.psychologist_id, s.patient_id, DATE_FORMAT(s.reserved_at, '%Y-%m-%d %k:%i:%s') AS diagnosed_at FROM schedules s WHERE s.id = ${appointmentId}`;
+
+                    database.db.query(appointmentSelectAllQuery, (selErr, selRows, selResult) => {
+                        if (selErr) {
                             res.status(500).json({
                                 successful: false,
-                                message: updateErr
+                                message: selErr
+                            }); 
+                        }
+                        else if (psychologistId == selRows[0].psychologist_id && patientId == selRows[0].patient_id && reservedAt == selRows[0].reserved_at) {
+                            res.status(400).json({
+                                successful: false,
+                                message: "No changes were made, same schedule details are entered."
+                            }); 
+                        }
+                        else {
+                            let appointmentUpdateQuery = `UPDATE schedules SET psychologist_id = ${psychologistId}, patient_id = ${patientId}, reserved_at = '${reservedAt}' WHERE id = ${appointmentId}`;
+
+                            database.db.query(appointmentUpdateQuery, (updateErr, updateRows, updateResult) => {
+                                if (updateErr) {
+                                    res.status(500).json({
+                                        successful: false,
+                                        message: updateErr
+                                    });
+                                }
+                                else {
+                                    res.status(200).json({
+                                        successful: true,
+                                        message: "Successfully updated schedule detail(s)."
+                                    });
+                                }
                             });
                         }
-                        else{
-                            res.status(200).json({
-                                successful: true,
-                                message: "Successfully updated schedule detail(s)."
-                            });
-
-                        }
-
                     });
                 } 
-                else{
+                else {
                     res.status(400).json({
                         successful: false,
                         message: "Schedule does not exist."
@@ -189,6 +205,7 @@ const updateAppointment = (req, res, next) => {
         });
     }
 }
+
 
 module.exports = {
     bookAppointment,
