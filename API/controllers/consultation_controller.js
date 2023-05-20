@@ -172,9 +172,9 @@ const updateConsultation = (req, res, next) => {
             else {
                 if (selectRows.length > 0) {
 
-                    let dianosisSelectAllQuery = `SELECT d.psychologist_id, d.patient_id, d.illness_id, DATE_FORMAT(d.diagnosed_at, '%Y-%m-%d %k:%i:%s') AS diagnosed_at, d.note FROM diagnoses d WHERE d.id = ${consultationId}`;
+                    let diagnosisSelectAllQuery = `SELECT d.psychologist_id, d.patient_id, d.illness_id, DATE_FORMAT(d.diagnosed_at, '%Y-%m-%d %k:%i:%s') AS diagnosed_at, d.note FROM diagnoses d WHERE d.id = ${consultationId}`;
 
-                    database.db.query(dianosisSelectAllQuery, (selErr, selRows, selResult) => {
+                    database.db.query(diagnosisSelectAllQuery, (selErr, selRows, selResult) => {
                         if (selErr) {
                             res.status(500).json({
                                 successful: false,
@@ -186,7 +186,7 @@ const updateConsultation = (req, res, next) => {
                                 successful: false,
                                 message: "No changes were made, same diagnosis details are entered."
                             }); 
-                            console.log(selRows[0].diagnosed_at);
+                            // console.log(selRows[0].diagnosed_at);
                         }
                         else {
 
