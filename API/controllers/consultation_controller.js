@@ -174,11 +174,11 @@ const updateConsultation = (req, res, next) => {
 
                     let dianosisSelectAllQuery = `SELECT d.psychologist_id, d.patient_id, d.illness_id, DATE_FORMAT(d.diagnosed_at, '%Y-%m-%d %k:%i:%s') AS diagnosed_at, d.note FROM diagnoses d WHERE d.id = ${consultationId}`;
 
-                    database.db.query(dianosisSelectAllQuery, (selectErr, selRows, selectResult) => {
-                        if (selectErr) {
+                    database.db.query(dianosisSelectAllQuery, (selErr, selRows, selResult) => {
+                        if (selErr) {
                             res.status(500).json({
                                 successful: false,
-                                message: selectErr
+                                message: selErr
                             }); 
                         }
                         else if (psychologistId == selRows[0].psychologist_id && patientId == selRows[0].patient_id && illnessId == selRows[0].illness_id && diagnosedAt == selRows[0].diagnosed_at && note == selRows[0].note) {
