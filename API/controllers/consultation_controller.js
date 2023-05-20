@@ -199,7 +199,7 @@ const updateConsultation = (req, res, next) => {
                                         message: updateErr
                                     });
                                 }
-                                else{
+                                else {
                                     res.status(200).json({
                                         successful: true,
                                         message: "Successfully updated consultation detail(s)."
@@ -209,7 +209,7 @@ const updateConsultation = (req, res, next) => {
                         }
                     }); 
                 } 
-                else{
+                else {
                     res.status(400).json({
                         successful: false,
                         message: "Consultation does not exist."
