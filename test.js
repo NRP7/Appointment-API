@@ -1,3 +1,6 @@
+const cryptoJS = require('crypto-js');
+const e = require('express');
+
 //const key = "javascript123456";
 
 // const test = () => {
@@ -24,3 +27,15 @@
 // }
 
 // test();
+
+// const test2 = () => {
+
+//     const password = "lols123";
+
+//     const encrypted = cryptoJS.SHA1(password);
+
+//     console.log(encrypted);
+
+// }
+
+// test2();
