@@ -12,6 +12,9 @@ consultationRouter.post('/add-consultation', consultationController.addConsultat
 consultationRouter.get('/view-consultation-result/:id', consultationController.viewConsultationResult);
 
 // PUT Method(s)
-consultationRouter.put('/update-consultation/:id', consultationController.updateConsultation);
+consultationRouter.put('/update-consultation-result/:id', consultationController.updateConsultation);
+
+// DELETE Method(s)
+consultationRouter.delete('/archive-consultation-result/:id', consultationController.archiveConsultation);
 
 module.exports = consultationRouter;
