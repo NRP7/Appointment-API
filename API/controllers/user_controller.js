@@ -206,22 +206,42 @@ const updateUserDetail = (req, res, next) => { // not done yet
             }
             else {
                 if (selectRows.length > 0) {
+                    let userpass = cryptoJS.SHA1(password);
 
-                    const userpass = cryptoJS.SHA1(password);
-                    //ALLOW THE UPDATING OF USER DETAILS
-                    let userUpdateQuery = `UPDATE users SET username = '${username}', userpass = '${userpass}', first_name = '${firstName}', last_name = '${lastName}', birthdate = '${birthdate}', gender = '${gender}', address = '${address}', email = '${email}', contact_number = '${contactNumber}' WHERE id = '${userId}'`;
+                    let userSelectAllQuery = `SELECT u.username, u.userpass, u.first_name, u.last_name, DATE_FORMAT(u.birthdate, '%Y-%m-%d') AS birthdate, u.gender, u.address, u.email, u.contact_number FROM users u WHERE u.id = ${userId}`;
 
-                    database.db.query(userUpdateQuery, (updateErr, updateRows, updateResult) => {
-                        if (updateErr) {
+                    database.db.query(userSelectAllQuery, (selErr, selRows, selResult) => {
+                        if (selErr) {
                             res.status(500).json({
                                 successful: false,
-                                message: updateErr
+                                message: selErr
+                            }); 
+                        }
+                        else if (username == selRows[0].username && (userpass.toString()) == selRows[0].userpass.toString() && firstName == selRows[0].first_name && lastName == selRows[0].last_name && birthdate == selRows[0].birthdate && gender == selRows[0].gender && address == selRows[0].address && email == selRows[0].email && contactNumber == selRows[0].contact_number) {
+                            res.status(400).json({
+                                successful: false,
+                                message: "No changes were made, same user details are entered."
                             });
                         }
                         else {
-                            res.status(200).json({
-                                successful: true,
-                                message: "Successfully updated user detail(s)."
+
+                            //const userpass = cryptoJS.SHA1(password);
+                            //ALLOW THE UPDATING OF USER DETAILS
+                            let userUpdateQuery = `UPDATE users SET username = '${username}', userpass = '${userpass}', first_name = '${firstName}', last_name = '${lastName}', birthdate = '${birthdate}', gender = '${gender}', address = '${address}', email = '${email}', contact_number = '${contactNumber}' WHERE id = '${userId}'`;
+
+                            database.db.query(userUpdateQuery, (updateErr, updateRows, updateResult) => {
+                                if (updateErr) {
+                                    res.status(500).json({
+                                        successful: false,
+                                        message: updateErr
+                                    });
+                                }
+                                else {
+                                    res.status(200).json({
+                                        successful: true,
+                                        message: "Successfully updated user detail(s)."
+                                    });
+                                }
                             });
                         }
                     });
