@@ -27,6 +27,7 @@ const addConsultation = (req, res, next) => {
     }
     
     else {
+        
         let diagnosisSelectQuery = `SELECT psychologist_id, patient_id, illness_id, diagnosed_at FROM diagnoses WHERE psychologist_id = ${psychologistId} AND patient_id = ${patientId} AND illness_id = ${illnessId} AND diagnosed_at = '${diagnosedAt}'`;
         
 
@@ -45,6 +46,7 @@ const addConsultation = (req, res, next) => {
                     });
                 }
                 else {
+                    
                     let diagnosisInsertQuery = `INSERT INTO diagnoses SET ?`;
                     let diagnosisObj = consultationModel.diagnosis_model(psychologistId, patientId, illnessId, diagnosedAt, note);
 
@@ -91,6 +93,7 @@ const viewConsultationResult = (req, res, next) => {
     // }
 
     else {
+
         let consultationViewQuery = `SELECT d.id AS Id, CONCAT(first_name, ' ', last_name) AS Psychologist, (SELECT CONCAT(first_name, ' ', last_name) AS Patient FROM users u WHERE u.id = d.patient_id) AS Patient, i.name AS Illness, DATE_FORMAT(diagnosed_at, '%Y-%m-%d') AS Date, TIME(diagnosed_at) AS Time, d.note AS Note FROM users u
         JOIN diagnoses d ON u.id = d.psychologist_id
         JOIN illnesses i ON d.illness_id = i.id
@@ -160,6 +163,7 @@ const updateConsultation = (req, res, next) => {
     }
 
     else {
+
         let diagnosisSelectQuery = `SELECT id FROM diagnoses WHERE id = ${consultationId}`;
 
         database.db.query(diagnosisSelectQuery, (selectErr, selectRows, selectResult) => {
@@ -212,7 +216,75 @@ const updateConsultation = (req, res, next) => {
                 else {
                     res.status(400).json({
                         successful: false,
-                        message: "Consultation does not exist."
+                        message: "Consultation Id does not exist."
+                    });
+                }
+            }
+        });
+    }
+}
+
+
+const archiveConsultation = (req, res, next) => {
+
+    const consultationId = req.params.id;
+
+    if (!utils.checkMandatoryField(consultationId)) {
+        res.status(404).json({
+            successful: false,
+            message: "A consultation credential is not defined."
+        });
+    }
+    
+    else {
+
+        let diagnosisSelectQuery = `SELECT id FROM diagnoses WHERE id = ${consultationId}`;
+
+        database.db.query(diagnosisSelectQuery, (selectErr, selectRows, selectResult) => {
+            if (selectErr) {
+                res.status(500).json({
+                    successful: false,
+                    message: selectErr
+                });
+            }
+            else {
+                if (selectRows.length > 0) {
+
+                    let diagnosisSelectAllQuery = `INSERT INTO diagnosis_archives (diagnosis_id, psychologist_id, patient_id, illness_id, diagnosed_at, note)
+                    SELECT * FROM diagnoses WHERE id = ${consultationId}`;
+    
+                    database.db.query(diagnosisSelectAllQuery, (selErr, selRows, selResult) => {
+                        if (selErr) {
+                            res.status(500).json({
+                                successful: false,
+                                message: insertErr
+                            });
+                        }
+                        else {
+    
+                            let diagnosisDeleteAllQuery = `DELETE FROM diagnoses WHERE id = ${consultationId}`;
+
+                            database.db.query(diagnosisDeleteAllQuery, (deleteErr, deleteRows, deleteResult) => {
+                                if (deleteErr) {
+                                    res.status(500).json({
+                                        successful: false,
+                                        message: deleteErr
+                                    });
+                                }
+                                else {
+                                    res.status(200).json({
+                                        successful: true,
+                                        message: "Successfully archived a diagnosis."
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+                else {
+                    res.status(400).json({
+                        successful: false,
+                        message: "Consultation Id does not exist."
                     });
                 }
             }
@@ -224,5 +296,6 @@ const updateConsultation = (req, res, next) => {
 module.exports = {
     addConsultation,
     viewConsultationResult,
-    updateConsultation
+    updateConsultation,
+    archiveConsultation
 }
