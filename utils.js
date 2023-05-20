@@ -1,6 +1,6 @@
 const e = require("express");
 
-function checkMandatoryFields(fieldsArr){
+function checkMandatoryFields(fieldsArr) {
     let result = false;
 
     for (let i = 0; i < fieldsArr.length; i++){
@@ -19,7 +19,7 @@ function checkMandatoryFields(fieldsArr){
 
 }
 
-function checkMandatoryField(field){
+function checkMandatoryField(field) {
     let result = false;
 
     if (field == null) {
@@ -35,7 +35,7 @@ function checkMandatoryField(field){
 
 }
 
-function isSameId(psychologist_id, patient_id){
+function isSameId(psychologist_id, patient_id) {
 
     result = false;
 
