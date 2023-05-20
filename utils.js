@@ -48,7 +48,7 @@ function isSameId(psychologist_id, patient_id) {
 
 }
 
-function isString(fieldsArr){
+function isString(fieldsArr) {
     let result = false;
 
     for(let i in fieldsArr){
