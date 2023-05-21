@@ -164,9 +164,9 @@ const updateConsultation = (req, res, next) => {
 
     else {
 
-        let diagnosisSelectQuery = `SELECT id FROM diagnoses WHERE id = ${consultationId}`;
+        let diagnosisSelectAllQuery = `SELECT d.id, d.psychologist_id, d.patient_id, d.illness_id, DATE_FORMAT(d.diagnosed_at, '%Y-%m-%d %k:%i:%s') AS diagnosed_at, d.note FROM diagnoses d WHERE d.id = ${consultationId}`;
 
-        database.db.query(diagnosisSelectQuery, (selectErr, selectRows, selectResult) => {
+        database.db.query(diagnosisSelectAllQuery, (selectErr, selectRows, selectResult) => {
             if (selectErr) {
                 res.status(500).json({
                     successful: false,
@@ -176,42 +176,32 @@ const updateConsultation = (req, res, next) => {
             else {
                 if (selectRows.length > 0) {
 
-                    let diagnosisSelectAllQuery = `SELECT d.psychologist_id, d.patient_id, d.illness_id, DATE_FORMAT(d.diagnosed_at, '%Y-%m-%d %k:%i:%s') AS diagnosed_at, d.note FROM diagnoses d WHERE d.id = ${consultationId}`;
+                    if (psychologistId == selectRows[0].psychologist_id && patientId == selectRows[0].patient_id && illnessId == selectRows[0].illness_id && diagnosedAt == selectRows[0].diagnosed_at && note == selectRows[0].note) {
+                        res.status(400).json({
+                            successful: false,
+                            message: "No changes were made, same diagnosis details are entered."
+                        }); 
+                        // console.log(selRows[0].diagnosed_at);
+                    }
+                    else {
 
-                    database.db.query(diagnosisSelectAllQuery, (selErr, selRows, selResult) => {
-                        if (selErr) {
-                            res.status(500).json({
-                                successful: false,
-                                message: selErr
-                            }); 
-                        }
-                        else if (psychologistId == selRows[0].psychologist_id && patientId == selRows[0].patient_id && illnessId == selRows[0].illness_id && diagnosedAt == selRows[0].diagnosed_at && note == selRows[0].note) {
-                            res.status(400).json({
-                                successful: false,
-                                message: "No changes were made, same diagnosis details are entered."
-                            }); 
-                            // console.log(selRows[0].diagnosed_at);
-                        }
-                        else {
+                        let diagnosisUpdateQuery = `UPDATE diagnoses SET psychologist_id = ${psychologistId}, patient_id = ${patientId}, illness_id = ${illnessId}, diagnosed_at = '${diagnosedAt}', note = '${note}' WHERE id = ${consultationId}`;
 
-                            let diagnosisUpdateQuery = `UPDATE diagnoses SET psychologist_id = ${psychologistId}, patient_id = ${patientId}, illness_id = ${illnessId}, diagnosed_at = '${diagnosedAt}', note = '${note}' WHERE id = ${consultationId}`;
-
-                            database.db.query(diagnosisUpdateQuery, (updateErr, updateRows, updateResult) => {
-                                if (updateErr) {
-                                    res.status(500).json({
-                                        successful: false,
-                                        message: updateErr
-                                    });
-                                }
-                                else {
-                                    res.status(200).json({
-                                        successful: true,
-                                        message: "Successfully updated consultation detail(s)."
-                                    });
-                                }
-                            });
-                        }
-                    }); 
+                        database.db.query(diagnosisUpdateQuery, (updateErr, updateRows, updateResult) => {
+                            if (updateErr) {
+                                res.status(500).json({
+                                    successful: false,
+                                    message: updateErr
+                                });
+                            }
+                            else {
+                                res.status(200).json({
+                                    successful: true,
+                                    message: "Successfully updated consultation detail(s)."
+                                });
+                            }
+                        });
+                    }
                 } 
                 else {
                     res.status(400).json({
