@@ -7,9 +7,9 @@ const bookAppointment = (req, res, next) => {
     let psychologistId = req.body.psychologist_id;
     let patientId = req.body.patient_id;
     let reservedAt = req.body.reserved_at;
-    let statusId = req.body.status_id;
+    let statusId = 2;
 
-    if (!utils.checkMandatoryFields([psychologistId, patientId, reservedAt, statusId])) {
+    if (!utils.checkMandatoryFields([psychologistId, patientId, reservedAt])) {
         res.status(404).json({
             successful: false,
             message: "An appointment credential is not defined."
@@ -150,9 +150,9 @@ const updateAppointment = (req, res, next) => {
     }
 
     else {
-        let appointmentSelectQuery = `SELECT id FROM schedules WHERE id = ${appointmentId}`;
+        let appointmentIdSelectQuery = `SELECT id FROM schedules WHERE id = ${appointmentId}`;
         
-        database.db.query(appointmentSelectQuery, (selectErr, selectRows, selectResult) => {
+        database.db.query(appointmentIdSelectQuery, (selectErr, selectRows, selectResult) => {
             if (selectErr) {
                 res.status(500).json({
                     successful: false,
@@ -209,8 +209,68 @@ const updateAppointment = (req, res, next) => {
 }
 
 
+const cancelAppointment = (req, res, next) => {
+    let appointmentId = req.params.id;
+
+    if (!utils.checkMandatoryField(appointmentId)) {
+        res.status(404).json({
+            successful: false,
+            message: "Appointment credential is missing."
+        });
+    }
+
+    else {
+        let appointmentIdSelectQuery = `SELECT id, status_id FROM schedules WHERE id = ${appointmentId}`;
+
+        database.db.query(appointmentIdSelectQuery, (selectErr, selectRows, selectResult) => {
+            if (selectErr) {
+                res.status(500).json({
+                    successful: false,
+                    message: selectErr
+                });
+            }
+            else {
+                if (selectRows.length > 0) {
+                    if (selectRows[0].status_id == 4) {
+                        res.status(400).json({
+                            successful: false,
+                            message: "No changes were made, status was already updated."
+                        });
+                    }
+                    else {
+                        let appointmentStatusUpdateQuery = `UPDATE schedules SET status_id = 4 WHERE id = ${appointmentId}`;
+
+                        database.db.query(appointmentStatusUpdateQuery, (updateErr, updateRows, updateResult) => {
+                            if (updateErr) {
+                                res.status(500).json({
+                                    successful: false,
+                                    message: updateErr
+                                });
+                            }
+                            else {
+                                res.status(200).json({
+                                    successful: true,
+                                    message: "Successfully cancelled the appointment."
+                                });
+                            }
+                        });
+                    }
+                }
+                else {
+                    res.status(400).json({
+                        successful: false,
+                        message: "Schedule does not exist."
+                    });
+                }
+            }
+        });
+    }
+}
+
+
 module.exports = {
     bookAppointment,
     viewAllAppointments,
-    updateAppointment
+    updateAppointment,
+    cancelAppointment
 }
