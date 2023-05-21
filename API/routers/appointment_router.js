@@ -11,5 +11,6 @@ appointmentRouter.get('/view-all', appointmentController.viewAllAppointments);
 
 // PUT Method(s)
 appointmentRouter.put('/update-appointment/:id', appointmentController.updateAppointment);
+appointmentRouter.put('/cancel-appointment/:id', appointmentController.cancelAppointment);
 
 module.exports = appointmentRouter;
