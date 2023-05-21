@@ -88,9 +88,10 @@ const bookAppointment = (req, res, next) => {
 
 const viewAllAppointments = (req, res, next) => {
 
-    let appointmentSelectQuery = `SELECT s.id AS Id, CONCAT(first_name, ' ', last_name) AS Psychologist, (SELECT CONCAT(first_name, ' ', last_name) AS Patient FROM users u WHERE u.id = s.patient_id) AS Patient, DATE_FORMAT(reserved_at, '%Y-%m-%d') AS Date, TIME(reserved_at) AS Time, st.name AS Status FROM users u
-    JOIN schedules s ON u.id = s.psychologist_id
-    JOIN statuses st ON s.status_id = st.id`;
+    let appointmentSelectQuery = `SELECT s.id AS Id, CONCAT(first_name, ' ', last_name) AS Psychologist, (SELECT CONCAT(first_name, ' ', last_name) AS Patient FROM users u WHERE u.id = s.patient_id) AS Patient, DATE_FORMAT(reserved_at, '%Y-%m-%d') AS Date, TIME(reserved_at) AS Time, st.name AS Status FROM schedules s
+    JOIN users u ON s.psychologist_id = u.id
+    JOIN statuses st ON s.status_id = st.id
+    ORDER BY s.id ASC`;
 
     database.db.query(appointmentSelectQuery, (selectErr, selectRows, selectResult) => {
 
