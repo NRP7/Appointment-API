@@ -5,6 +5,7 @@ const userRouter = express.Router();
 
 // POST Method(s)
 userRouter.post('/add-user', userController.addUser);
+userRouter.post('/login-user', userController.login);
 
 // GET Method(s)
 //userRouter.get('/view-user/:id', userController.viewUser);
