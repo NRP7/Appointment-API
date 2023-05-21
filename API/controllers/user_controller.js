@@ -306,6 +306,67 @@ const deleteUser = (req, res, next) => {
         });
     }
 }
+
+const login = (req, res, next) => {
+    let username = req.body.username;
+    let password = req.body.password;
+
+    if (!utils.checkMandatoryFields([username, password])) {
+        res.status(404).json({
+            successful: false,
+            message: "A user credential is missing."
+        });
+        return;
+    }
+
+    if (!utils.isString([username, password])) {
+        res.status(400).json({
+            successful: false,
+            message: "Incorrect user credential format."
+        });
+    }
+
+    else {
+
+        let searchCredentials = `SELECT username, userpass FROM users WHERE username = '${username}'`;
+
+        database.db.query(searchCredentials, (searchErr, searchRows, searchResult) => {
+            if (searchErr) {
+                res.status(500).json({
+                    successful: false,
+                    message: searchErr
+                });
+            }
+
+            else {
+                if (searchRows.length > 0) {
+                    let inputPass = cryptoJS.SHA1(password);
+                    let dbUserpass = searchRows[0].userpass.toString();
+
+                    if (inputPass != dbUserpass) {
+                        res.status(400).json({
+                            successful: false,
+                            message: "Password is incorrect."
+                        });
+                        return;
+                    }
+
+                    res.status(200).json({
+                        successful: true,
+                        message: "Login Accepted!"
+                    }); 
+
+                }
+                else {
+                    res.status(400).json({
+                        successful: false,
+                        message: "User does not exist."
+                    });
+                }
+            }
+        });
+    }
+}
     
 
 module.exports = {
@@ -313,5 +374,6 @@ module.exports = {
     viewAllUsers,
     viewUser,
     updateUserDetail,
-    deleteUser
+    deleteUser,
+    login
 }
