@@ -105,7 +105,7 @@ const viewAllAppointments = (req, res, next) => {
             });
         }
         else if (selectRows.length == 0) {
-            res.status(200).json({
+            res.status(400).json({
                 successful: true,
                 message:"No appointment available in the database."
             });
