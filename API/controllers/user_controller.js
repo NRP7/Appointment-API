@@ -83,7 +83,7 @@ const viewAllUsers = (req, res, next) => {
             });
         }
         else if (selectRows.length == 0) {
-            res.status(200).json({
+            res.status(400).json({
                 successful: true,
                 message:"No users available in the database."
             });
@@ -138,7 +138,7 @@ const viewUser = (req, res, next) => {
                 });
             }
             else if (selectRows.length == 0) {
-                res.status(200).json({
+                res.status(400).json({
                     successful: true,
                     //message:"User Name does not exist."
                     message:"User Id does not exist."
