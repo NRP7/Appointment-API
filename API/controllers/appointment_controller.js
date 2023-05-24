@@ -261,6 +261,7 @@ const cancelAppointment = (req, res, next) => {
     }
 }
 
+
 const acceptAppointment = (req, res, next) => {
     let appointmentId = req.params.id;
 
