@@ -99,5 +99,3 @@ module.exports = {
     isString,
     containsWhitespace
 }
-
-//NOTE: UMAYOS KAYO.
