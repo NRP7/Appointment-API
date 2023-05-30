@@ -14,6 +14,8 @@ userRouter.get('/view-user/:id', userController.viewUser);
 
 // PUT Method(s)
 userRouter.put('/update-user-detail/:id', userController.updateUserDetail);
+userRouter.put('/update-user-password', userController.updateUserPassword);
+userRouter.put('/update-user-username/:id', userController.updateUsername);
 
 // DELETE Method(s)
 userRouter.delete('/delete-user/:id', userController.deleteUser);
