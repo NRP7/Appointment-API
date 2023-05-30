@@ -1,4 +1,3 @@
-const e = require("express");
 
 function checkMandatoryFields(fieldsArr) {
     let result = false;
@@ -62,6 +61,12 @@ function isString(fieldsArr) {
 
 }
 
+function containsWhitespace(field) {
+
+    return /\s/.test(field);
+
+  }
+
 // let test = () => {
 
 //     let obj = {
@@ -91,5 +96,8 @@ module.exports = {
     checkMandatoryFields,
     checkMandatoryField,
     isSameId,
-    isString
+    isString,
+    containsWhitespace
 }
+
+//NOTE: UMAYOS KAYO.
