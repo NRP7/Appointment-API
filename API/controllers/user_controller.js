@@ -18,7 +18,7 @@ const addUser = (req, res, next) => {
     let contactNumber = req.body.contact_number;
 
 
-    if (!utils.checkMandatoryFields([role, username, password, firstName, lastName, birthdate, gender, address, email, contactNumber])) {
+    if (!utils.checkMandatoryFields([role, username, password, firstName, lastName, birthdate, gender, address, email, contactNumber])) { // checks if there are empty or null fields
         res.status(404).json({
             successful: false,
             message: "A field is not defined."
@@ -26,14 +26,15 @@ const addUser = (req, res, next) => {
         return;
     }
 
-    if (!utils.isString([username, password, firstName, lastName, birthdate, gender, address, email, contactNumber])) {
+    if (!utils.isString([username, password, firstName, lastName, birthdate, gender, address, email, contactNumber])) { // checks if a field is not in string data type
         res.status(400).json({
             successful: false,
             message: "Incorrect user detail(s) data type."
         });
+        return;
     }
 
-    if (![0, 1].includes(role)) {
+    if (![0, 1].includes(role)) { // validates the role number input of the user
         res.status(400).json({
             successful: false,
             message: "Incorrect role input."
@@ -41,7 +42,7 @@ const addUser = (req, res, next) => {
         return;
     }
 
-    if (utils.containsWhitespace(username)){
+    if (utils.containsWhitespace(username)){ // validates the input and format of the username
         res.status(400).json({
             successful: false,
             message: "Username must not contain any spaces."
@@ -49,7 +50,7 @@ const addUser = (req, res, next) => {
         return;
     } 
 
-    if (!utils.checkPassword(password)) {
+    if (!utils.checkPassword(password)) { // validates the input and format of the password
         res.status(400).json({
             successful: false,
             message: "Incorrect password format. Password must be: Atleast 8 characters long, Contains alphanumeric upper and lower case letters, and Contains special characters"
@@ -57,7 +58,7 @@ const addUser = (req, res, next) => {
         return;
     }
 
-    if (!utils.checkDate(birthdate)) {
+    if (!utils.checkDate(birthdate)) { // validates the input and format of the birthdate
         res.status(400).json({
             successful: false,
             message: "Incorrect birthdate input or format. Format must be YYYY-MM-DD."
@@ -65,15 +66,15 @@ const addUser = (req, res, next) => {
         return;
     }
 
-    if (!["Male", "Female"].includes(gender)) {
+    if (!["Male", "Female"].includes(gender)) { // validates the input and format of the gender
         res.status(400).json({
             successful: false,
-            message: "Incorrect gender input format."
+            message: "Incorrect gender input or format."
         });
         return;
     }
 
-    if (!utils.checkEmail(email)) {
+    if (!utils.checkEmail(email)) { // validates the input and format of the email
         res.status(400).json({
             successful: false,
             message: "Incorrect email format."
@@ -81,7 +82,7 @@ const addUser = (req, res, next) => {
         return;
     }
 
-    if (!utils.checkContactNumber(contactNumber)) {
+    if (!utils.checkContactNumber(contactNumber)) { // validates the input and format of the contact number
         res.status(400).json({
             successful: false,
             message: "Incorrect contact number format."
@@ -89,43 +90,87 @@ const addUser = (req, res, next) => {
     }
 
     else {
-        let userSelectQuery = `SELECT username FROM users WHERE username = '${username}'`;
 
-        database.db.query(userSelectQuery, (selectErr,  selectRows, selectResult) => {
-            if (selectErr) {
+        let usernameSelectQuery = `SELECT username FROM users WHERE username = '${username}'`;
+
+        database.db.query(usernameSelectQuery, (usernameSelErr,  usernameSelRows, usernameSelResult) => {
+            if (usernameSelErr) {
                 res.status(500).json({
                     sucessful: false,
-                    message: selectErr
+                    message: usernameSelErr
                 });
             }
             else {
-                if (selectRows.length > 0) {
+                if (usernameSelRows.length > 0) { // checks if the username already exists in the DB
                     res.status(400).json({
                         sucessful: false,
                         message: "Username already exists."
                     });
                 }
                 else {
-                    const saltRounds = 10;
 
-                    const salt = bcrypt.genSaltSync(saltRounds);
-                    const userpass = bcrypt.hashSync(password, salt);
+                    let emailSelectQuery = `SELECT email FROM users WHERE email = '${email}'`;
 
-                    let userInsertQuery = `INSERT INTO users SET ?`;
-                    let userObj = userModel.user_model(role, username, userpass, firstName, lastName, birthdate, gender, address, email, contactNumber);
-
-                    database.db.query(userInsertQuery, userObj, (insertErr, insertRows, insertResult) => {
-                        if (insertErr) {
+                    database.db.query(emailSelectQuery, (emailSelErr,  emailSelRows, emailSelResult) => {
+                        if (emailSelErr) {
                             res.status(500).json({
-                                successful: false,
-                                message: insertErr
+                                sucessful: false,
+                                message: emailSelErr
                             });
                         }
                         else {
-                            res.status(200).json({
-                                successful: true,
-                                message: "Successfully added new user."
-                            });
+                            if (emailSelRows.length > 0) { // checks if the email already exists in the DB
+                                res.status(400).json({
+                                    sucessful: false,
+                                    message: "Email already exists."
+                                });
+                            }
+                            else {
+
+                                let contactNumSelectQuery = `SELECT contact_number FROM users WHERE contact_number = '${contactNumber}'`;
+
+                                database.db.query(contactNumSelectQuery, (contactNumSelErr,  contactNumSelRows, contactNumSelResult) => {
+                                    if (contactNumSelErr) {
+                                        res.status(500).json({
+                                            sucessful: false,
+                                            message: contactNumSelErr
+                                        });
+                                    }
+                                    else {
+                                        if (contactNumSelRows.length > 0) { // checks if the contact number already exists in the DB
+                                            res.status(400).json({
+                                                sucessful: false,
+                                                message: "Contact number already exists."
+                                            });
+                                        }
+                                        else {
+
+                                            const saltRounds = 10;
+
+                                            const salt = bcrypt.genSaltSync(saltRounds);
+                                            const userpass = bcrypt.hashSync(password, salt);
+
+                                            let userInsertQuery = `INSERT INTO users SET ?`;
+                                            let userObj = userModel.user_model(role, username, userpass, firstName, lastName, birthdate, gender, address, email, contactNumber);
+
+                                            database.db.query(userInsertQuery, userObj, (insertErr, insertRows, insertResult) => {
+                                                if (insertErr) {
+                                                    res.status(500).json({
+                                                        successful: false,
+                                                        message: insertErr
+                                                    });
+                                                }
+                                                else {
+                                                    res.status(200).json({ // response if the user account was successfully created and added to the DB
+                                                        successful: true,
+                                                        message: "Successfully added new user."
+                                                    });
+                                                }
+                                            });
+                                        }
+                                    }
+                                });
+                            }
                         }
                     });
                 }
@@ -147,7 +192,7 @@ const viewAllUsers = (req, res, next) => { // Remove Id and Password - DB fields
             });
         }
         else if (selectRows.length == 0) {
-            res.status(200).json({ // question: 400 but true? or 400 but false? or 200 but true? or 200 but false?  answer: res.status(200) and true
+            res.status(200).json({ // checks if there are no users in the DB or the DB table is empty
                 successful: true,
                 message:"No users available in the database."
             });
@@ -164,7 +209,7 @@ const viewAllUsers = (req, res, next) => { // Remove Id and Password - DB fields
                 }
             }
 
-            res.status(200).json({
+            res.status(200).json({ // response if fetching all users was successful
                 successful: true,
                 message: "Successfully got all users",
                 data: selectRows
@@ -177,7 +222,7 @@ const viewAllUsers = (req, res, next) => { // Remove Id and Password - DB fields
 const viewUserDetails = (req, res, next) => {
     let userId = req.params.id;
 
-    if (!utils.checkMandatoryField(userId)) {
+    if (!utils.checkMandatoryField(userId)) { // checks if there are empty or null fields
         res.status(404).json({
             successful: false,
             message: "User id is missing."
@@ -194,10 +239,10 @@ const viewUserDetails = (req, res, next) => {
                     message: selectErr
                 });
             }
-            else if (selectRows.length == 0) {
+            else if (selectRows.length == 0) { // checks if the user does not exist in the DB
                 res.status(400).json({
                     successful: false,
-                    message:"User Id does not exist."
+                    message:"User does not exist."
                 });
             }
             else {
@@ -212,7 +257,7 @@ const viewUserDetails = (req, res, next) => {
                     }
                 }
 
-                res.status(200).json({
+                res.status(200).json({ // response if fetching a user's details was successful
                     successful: true,
                     message: "Successfully got the user details",
                     data: selectRows
@@ -235,7 +280,7 @@ const updateUserDetails = (req, res, next) => { // separate username and passwor
     let email = req.body.email;
     let contactNumber = req.body.contact_number;
 
-    if (!utils.checkMandatoryFields([userId, firstName, lastName, birthdate, gender, address, email, contactNumber])) {
+    if (!utils.checkMandatoryFields([userId, firstName, lastName, birthdate, gender, address, email, contactNumber])) { // checks if there are empty or null fields
         res.status(404).json({
             successful: false,
             message: "A field is not defined."
@@ -243,7 +288,7 @@ const updateUserDetails = (req, res, next) => { // separate username and passwor
         return;
     }
 
-    if (!utils.isString([firstName, lastName, birthdate, gender, address, email, contactNumber])) {
+    if (!utils.isString([firstName, lastName, birthdate, gender, address, email, contactNumber])) { // checks if a field is not in string data type
         res.status(400).json({
             successful: false,
             message: "Incorrect user detail(s) data type."
@@ -251,7 +296,7 @@ const updateUserDetails = (req, res, next) => { // separate username and passwor
         return;
     }
 
-    if (!utils.checkDate(birthdate)) {
+    if (!utils.checkDate(birthdate)) { // validates the input and format of the birthdate
         res.status(400).json({
             successful: false,
             message: "Incorrect birthdate input or format. Format must be YYYY-MM-DD."
@@ -259,15 +304,15 @@ const updateUserDetails = (req, res, next) => { // separate username and passwor
         return;
     }
 
-    if (!["Male", "Female"].includes(gender)) {
+    if (!["Male", "Female"].includes(gender)) { // validates the input and format of the gender
         res.status(400).json({
             successful: false,
-            message: "Incorrect gender input format."
+            message: "Incorrect gender input or format."
         });
         return;
     }
 
-    if (!utils.checkEmail(email)) {
+    if (!utils.checkEmail(email)) { // validates the input and format of the email
         res.status(400).json({
             successful: false,
             message: "Incorrect email format."
@@ -275,7 +320,7 @@ const updateUserDetails = (req, res, next) => { // separate username and passwor
         return;
     }
 
-    if (!utils.checkContactNumber(contactNumber)) {
+    if (!utils.checkContactNumber(contactNumber)) { // validates the input and format of the contact number
         res.status(400).json({
             successful: false,
             message: "Incorrect contact number format."
@@ -283,6 +328,7 @@ const updateUserDetails = (req, res, next) => { // separate username and passwor
     }
 
     else {
+
         let userSelectQuery = `SELECT id FROM users WHERE id = '${userId}'`;
         database.db.query(userSelectQuery, (selectErr, selectRows, selectResult) => {
             if (selectErr) {
@@ -303,36 +349,78 @@ const updateUserDetails = (req, res, next) => { // separate username and passwor
                                 message: selErr
                             }); 
                         }
-                        else if (firstName == selRows[0].first_name && lastName == selRows[0].last_name && birthdate == selRows[0].birthdate && gender == selRows[0].gender && address == selRows[0].address && email == selRows[0].email && contactNumber == selRows[0].contact_number) {
-                            res.status(200).json({
+                        else if (firstName == selRows[0].first_name && lastName == selRows[0].last_name && birthdate == selRows[0].birthdate && gender == selRows[0].gender && address == selRows[0].address && email == selRows[0].email && contactNumber == selRows[0].contact_number) { // checks if no changes were made in the existing user
+                            res.status(200).json({ 
                                 successful: true,
                                 message: "No changes were made, same user details are entered."
                             });
                         }
                         else {
 
-                            //ALLOW THE UPDATING OF USER DETAILS
-                            let userUpdateQuery = `UPDATE users SET first_name = '${firstName}', last_name = '${lastName}', birthdate = '${birthdate}', gender = '${gender}', address = '${address}', email = '${email}', contact_number = '${contactNumber}', updated_at = NOW() WHERE id = '${userId}'`;
+                            let emailSelectQuery = `SELECT id, email FROM users WHERE email = '${email}'`;
 
-                            database.db.query(userUpdateQuery, (updateErr, updateRows, updateResult) => {
-                                if (updateErr) {
+                            database.db.query(emailSelectQuery, (emailSelErr,  emailSelRows, emailSelResult) => {
+                                if (emailSelErr) {
                                     res.status(500).json({
-                                        successful: false,
-                                        message: updateErr
+                                        sucessful: false,
+                                        message: emailSelErr
                                     });
                                 }
                                 else {
-                                    res.status(200).json({
-                                        successful: true,
-                                        message: "Successfully updated user detail(s)."
-                                    });
+                                    if (emailSelRows.length > 0 && userId != emailSelRows[0].id) { // checks if the email already exists in the DB from a different user
+                                        res.status(400).json({
+                                            sucessful: false,
+                                            message: "Email already exists."
+                                        });
+                                    }
+                                    else {
+
+                                        let contactNumSelectQuery = `SELECT contact_number FROM users WHERE contact_number = '${contactNumber}'`;
+
+                                        database.db.query(contactNumSelectQuery, (contactNumSelErr,  contactNumSelRows, contactNumSelResult) => {
+                                            if (contactNumSelErr) {
+                                                res.status(500).json({
+                                                    sucessful: false,
+                                                    message: contactNumSelErr
+                                                });
+                                            }
+                                            else {
+                                                if (contactNumSelRows.length > 0 && userId != contactNumSelRows[0].id) { // checks if the contact number already exists in the DB from a different user
+                                                    res.status(400).json({
+                                                        sucessful: false,
+                                                        message: "Contact number already exists."
+                                                    });
+                                                }
+                                                else {
+
+                                                    //ALLOW THE UPDATING OF USER DETAILS
+                                                    let userUpdateQuery = `UPDATE users SET first_name = '${firstName}', last_name = '${lastName}', birthdate = '${birthdate}', gender = '${gender}', address = '${address}', email = '${email}', contact_number = '${contactNumber}', updated_at = NOW() WHERE id = '${userId}'`;
+
+                                                    database.db.query(userUpdateQuery, (updateErr, updateRows, updateResult) => {
+                                                        if (updateErr) {
+                                                            res.status(500).json({
+                                                                successful: false,
+                                                                message: updateErr
+                                                            });
+                                                        }
+                                                        else {
+                                                            res.status(200).json({ // response if the existing user account was successfully updated
+                                                                successful: true,
+                                                                message: "Successfully updated user detail(s)."
+                                                            });
+                                                        }
+                                                    });
+                                                }
+                                            }
+                                        });
+                                    }
                                 }
                             });
                         }
                     });
                 }
                 else {
-                    res.status(400).json({
+                    res.status(400).json({ // response if the user, based on the user id, does not exist
                         successful: false,
                         message: "User does not exist."
                     });
@@ -349,7 +437,7 @@ const updateUsername = (req, res, next) => {
 
     let username = req.body.username;
 
-    if (!utils.checkMandatoryFields([userId, username])) {
+    if (!utils.checkMandatoryFields([userId, username])) { // checks if there are empty or null fields
         res.status(404).json({
             successful: false,
             message: "A field is not defined."
@@ -357,7 +445,7 @@ const updateUsername = (req, res, next) => {
         return;
     }
 
-    if (!utils.isString([username])) {
+    if (!utils.isString([username])) { // checks if a field is not in string data type
         res.status(400).json({
             successful: false,
             message: "Incorrect username credential data type."
@@ -365,7 +453,7 @@ const updateUsername = (req, res, next) => {
         return;
     }
 
-    if (utils.containsWhitespace(username)){
+    if (utils.containsWhitespace(username)){ // validates the input and format of the username
         res.status(400).json({
             successful: false,
             message: "Username must not contain any spaces."
@@ -386,7 +474,7 @@ const updateUsername = (req, res, next) => {
             else {
                 if (selectRows.length > 0) {
 
-                    if (username == selectRows[0].username) {
+                    if (username == selectRows[0].username) { // checks if no changes were made in the existing username
                         res.status(200).json({
                                 successful: true,
                                 message: "No changes were made, same username is entered."
@@ -404,7 +492,7 @@ const updateUsername = (req, res, next) => {
                                 });
                             }
                             else {
-                                res.status(200).json({
+                                res.status(200).json({ // response if the username was successfully updated
                                     successful: true,
                                     message: "Successfully updated username."
                                 });
@@ -413,7 +501,7 @@ const updateUsername = (req, res, next) => {
                     }
                 }
                 else {
-                    res.status(400).json({
+                    res.status(400).json({ // response if the user, based on the user id, does not exist
                         successful: false,
                         message: "Username does not exist."
                     });
@@ -430,7 +518,7 @@ const updateUserPassword = (req, res, next) => {
     let currPassword = req.body.current_password;
     let newPassword = req.body.new_password;
 
-    if (!utils.checkMandatoryFields([username, currPassword, newPassword])) {
+    if (!utils.checkMandatoryFields([username, currPassword, newPassword])) { // checks if there are empty or null fields
         res.status(404).json({
             successful: false,
             message: "A field is not defined."
@@ -438,7 +526,7 @@ const updateUserPassword = (req, res, next) => {
         return;
     }
 
-    if (!utils.isString([username, currPassword, newPassword])) {
+    if (!utils.isString([username, currPassword, newPassword])) { // checks if a field is not in string data type
         res.status(400).json({
             successful: false,
             message: "Incorrect user credential data type."
@@ -446,7 +534,7 @@ const updateUserPassword = (req, res, next) => {
         return;
     }
 
-    if (utils.containsWhitespace(username)){
+    if (utils.containsWhitespace(username)){ // validates the input and format of the username
         res.status(400).json({
             successful: false,
             message: "Username must not contain any spaces."
@@ -454,7 +542,7 @@ const updateUserPassword = (req, res, next) => {
         return;
     } 
 
-    if (!utils.checkPassword(currPassword)) {
+    if (!utils.checkPassword(currPassword)) { // validates the input and format of the password
         res.status(400).json({
             successful: false,
             message: "Incorrect password format. Password must be: Atleast 8 characters long, Contains alphanumeric upper and lower case letters, and Contains special characters"
@@ -462,7 +550,7 @@ const updateUserPassword = (req, res, next) => {
         return;
     }
 
-    if (!utils.checkPassword(newPassword)) {
+    if (!utils.checkPassword(newPassword)) { // validates the input and format of the password
         res.status(400).json({
             successful: false,
             message: "Incorrect password format. Password must be: Atleast 8 characters long, Contains alphanumeric upper and lower case letters, and Contains special characters"
@@ -470,7 +558,7 @@ const updateUserPassword = (req, res, next) => {
         return;
     }
 
-    if (currPassword == newPassword) {
+    if (currPassword == newPassword) { // checks if the current password is the same with the new password entered
         res.status(400).json({
             successful: false,
             message: "The current password is the same with the new password entered."
@@ -490,7 +578,7 @@ const updateUserPassword = (req, res, next) => {
             else {
                 if (searchRows.length > 0) {
 
-                    if (!bcrypt.compareSync(currPassword, searchRows[0].userpass)) {
+                    if (!bcrypt.compareSync(currPassword, searchRows[0].userpass)) { // checks if the current password entered does not match the password stored in the DB 
                         res.status(400).json({
                             successful: false,
                             message: "Current password entered is incorrect."
@@ -513,7 +601,7 @@ const updateUserPassword = (req, res, next) => {
                                 });
                             }
                             else {
-                                res.status(200).json({
+                                res.status(200).json({ // response if the password was successfully updated
                                     successful: true,
                                     message: "Successfully updated user password."
                                 });
@@ -522,7 +610,7 @@ const updateUserPassword = (req, res, next) => {
                     }
                 }
                 else {
-                    res.status(400).json({
+                    res.status(400).json({ // response if the user, based on the username, does not exist
                         successful: false,
                         message: "User does not exist."
                     });
@@ -536,7 +624,7 @@ const updateUserPassword = (req, res, next) => {
 const deleteUser = (req, res, next) => {
     const userId = req.params.id;
 
-    if (!utils.checkMandatoryField(userId)) {
+    if (!utils.checkMandatoryField(userId)) { // checks if there are empty or null fields
         res.status(404).json({
             successful: false,
             message: "User Id is missing."
@@ -564,7 +652,7 @@ const deleteUser = (req, res, next) => {
                             });
                         }
                         else {
-                            res.status(200).json({
+                            res.status(200).json({ // response if the user was successfully deleted
                                 successful: true,
                                 message: "Successfully deleted a user."
                             });
@@ -572,7 +660,7 @@ const deleteUser = (req, res, next) => {
                     });
                 }
                 else {
-                    res.status(400).json({
+                    res.status(400).json({ // response if the user, based on the user id, does not exist
                         successful: false,
                         message: "User Id does not exist."
                     });
@@ -587,7 +675,7 @@ const login = (req, res, next) => { // to edit once bcrypt tutorial video is pro
     let username = req.body.username;
     let password = req.body.password;
 
-    if (!utils.checkMandatoryFields([username, password])) {
+    if (!utils.checkMandatoryFields([username, password])) { // checks if there are empty or null fields
         res.status(404).json({
             successful: false,
             message: "A user credential is missing."
@@ -595,7 +683,7 @@ const login = (req, res, next) => { // to edit once bcrypt tutorial video is pro
         return;
     }
 
-    if (!utils.isString([username, password])) {
+    if (!utils.isString([username, password])) { // checks if a field is not in string data type
         res.status(400).json({
             successful: false,
             message: "Incorrect user credential data type."
@@ -603,7 +691,7 @@ const login = (req, res, next) => { // to edit once bcrypt tutorial video is pro
         return;
     }
 
-    if (utils.containsWhitespace(username)){
+    if (utils.containsWhitespace(username)){ // validates the input and format of the username
         res.status(400).json({
             successful: false,
             message: "Username must not contain any spaces."
@@ -611,7 +699,7 @@ const login = (req, res, next) => { // to edit once bcrypt tutorial video is pro
         return;
     } 
 
-    if (!utils.checkPassword(password)) {
+    if (!utils.checkPassword(password)) { // validates the input and format of the password
         res.status(400).json({
             successful: false,
             message: "Incorrect password format. Password must be: Atleast 8 characters long, Contains alphanumeric upper and lower case letters, and Contains special characters"
@@ -633,7 +721,7 @@ const login = (req, res, next) => { // to edit once bcrypt tutorial video is pro
             else {
                 if (searchRows.length > 0) {
 
-                    if (!bcrypt.compareSync(password, searchRows[0].userpass)) {
+                    if (!bcrypt.compareSync(password, searchRows[0].userpass)) { // checks if the password entered does not match the password stored in the DB 
                         res.status(400).json({
                             successful: false,
                             message: "Password is incorrect."
@@ -641,14 +729,14 @@ const login = (req, res, next) => { // to edit once bcrypt tutorial video is pro
                         return;
                     }
 
-                    res.status(200).json({
+                    res.status(200).json({ // response if the login is successful and the login credentials were accepted
                         successful: true,
                         message: "Login Accepted!"
                     }); 
 
                 }
                 else {
-                    res.status(400).json({
+                    res.status(400).json({ // response if the user, based on the username, does not exist
                         successful: false,
                         message: "User does not exist."
                     });
