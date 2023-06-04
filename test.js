@@ -1,5 +1,3 @@
-const cryptoJS = require('crypto-js');
-const e = require('express');
 
 //const key = "javascript123456";
 
@@ -39,3 +37,27 @@ const e = require('express');
 // }
 
 // test2();
+
+const dateTest = () => {
+
+    // let date = new Date();
+
+    // console.log(date);
+    // console.log(date.getDay());
+
+    let date = "2023-06-04";
+    let time = "12:45"
+
+    let dateTime = date + " " + time;
+
+    console.log(dateTime);
+    console.log(`${date} ${time}`);
+
+    let hour = "08";
+    console.log(hour);
+
+    console.log(time.length);
+
+}
+
+dateTest();
