@@ -201,6 +201,7 @@ const bookAppointment = (req, res, next) => {
     }
 }
 
+// checks if there are no appointments in the DB or the DB table is empty
 
 const viewPsychologistAppointments = (req, res, next) => { // separate view all appointments for patient and psych Question: paanong separate? => RESOLVED
     let userId = req.params.id;
@@ -218,7 +219,7 @@ const viewPsychologistAppointments = (req, res, next) => { // separate view all 
                 message: selectErr
             });
         }
-        else if (selectRows.length == 0) { // checks if there are no appointments in the DB or the DB is empty
+        else if (selectRows.length == 0) { // checks if there are no appointments in the DB or the DB table is empty
             res.status(200).json({
                 successful: true,
                 message:"The psychologist has no appointment available in the database."
@@ -252,7 +253,7 @@ const viewPatientAppointments = (req, res, next) => { // separate view all appoi
                 message: selectErr
             });
         }
-        else if (selectRows.length == 0) { // checks if there are no appointments in the DB or the DB is empty
+        else if (selectRows.length == 0) { // checks if there are no appointments in the DB or the DB table is empty
             res.status(200).json({
                 successful: true,
                 message:"No appointment available in the database."
@@ -327,7 +328,7 @@ const updateAppointment = (req, res, next) => { // can only update schedule (res
 
                     if (selectRows[0].status_id == 4) { // checks if the appointment was cancelled
                         res.status(400).json({
-                            successful: true,
+                            successful: false,
                             message: "The appointment was already cancelled, it cannot be updated anymore."
                         });
                     }
@@ -517,7 +518,7 @@ const acceptAppointment = (req, res, next) => {
 
                     if (selectRows[0].status_id == 4) { // checks if the appointment was cancelled
                         res.status(400).json({
-                            successful: true,
+                            successful: false,
                             message: "The appointment was already cancelled, it cannot be accepted anymore."
                         });
                     }
