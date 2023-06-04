@@ -35,8 +35,7 @@ function checkMandatoryField(field) {
 }
 
 function isSameId(psychologist_id, patient_id) {
-
-    result = false;
+    let result = false;
 
     if(psychologist_id === patient_id){
         return result;
@@ -63,9 +62,62 @@ function isString(fieldsArr) {
 
 function containsWhitespace(field) {
 
-    return /\s/.test(field);
+    const regex = /\s/;
+    return regex.test(field);
 
-  }
+}
+
+function checkPassword(password) {
+
+    const regex = /^(?=.*\d)(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
+    return regex.test(password);
+
+}
+
+function checkDate(date) {
+
+    let result = false;
+
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)){
+        return result;
+    }
+
+    let parts = date.split('-');
+    //let year = parseInt(parts[0], 10);
+    let month = ( parts[1][0] === '0') ? parseInt(parts[1][1], 10) : parseInt(parts[1], 10);
+    let day = ( parts[2][0] === '0') ? parseInt(parts[2][1], 10) : parseInt(parts[2], 10);
+    
+    if (month < 1 || month > 12) {
+        return result;
+    }
+
+    if (day < 1 || day > 31) {
+        return result;
+    }
+
+    result = true;
+    return result;
+}
+
+function checkEmail(email) {
+
+    const regex = /^[0-9a-z]+(?:\.[0-9a-z]+)*@[a-z0-9]{2,}(?:\.[a-z]{2,})+$/;
+    return regex.test(email);
+
+}
+
+function toSentenceCase(str) {
+
+    return str.toLowerCase().charAt(0).toUpperCase() + str.slice(1);
+
+}
+
+function checkContactNumber(contactNum) {
+
+    const regex = /^\(?(\d{4})\)?[- ]?(\d{3})[- ]?(\d{4})$/;
+    return regex.test(contactNum);
+
+}
 
 // let test = () => {
 
@@ -97,5 +149,10 @@ module.exports = {
     checkMandatoryField,
     isSameId,
     isString,
-    containsWhitespace
+    containsWhitespace,
+    checkEmail,
+    checkPassword,
+    toSentenceCase,
+    checkContactNumber,
+    checkDate
 }
