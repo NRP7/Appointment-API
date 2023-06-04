@@ -1,7 +1,7 @@
-const user_model = (role_num, username, userpass, first_name, last_name, birthDate, gender, address, email, contact_number) => {
+const user_model = (role, username, userpass, first_name, last_name, birthDate, gender, address, email, contact_number) => {
 
     let User = {
-        role_num: role_num,
+        role: role,
         username: username,
         userpass: userpass,
         first_name: first_name,
