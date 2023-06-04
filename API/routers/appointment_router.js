@@ -7,7 +7,8 @@ const appointmentRouter = express.Router();
 appointmentRouter.post('/book-appointment', appointmentController.bookAppointment);
 
 // GET Method(s)
-appointmentRouter.get('/view-all', appointmentController.viewAllAppointments);
+appointmentRouter.get('/view-psychologist-appointments/:id', appointmentController.viewPsychologistAppointments);
+appointmentRouter.get('/view-patient-appointments/:id', appointmentController.viewPatientAppointments);
 
 // PUT Method(s)
 appointmentRouter.put('/update-appointment/:id', appointmentController.updateAppointment);
