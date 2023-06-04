@@ -60,7 +60,7 @@ const addUser = (req, res, next) => {
     if (!utils.checkDate(birthdate)) {
         res.status(400).json({
             successful: false,
-            message: "Incorrect birthdate input format. Format must be YYYY-MM-DD."
+            message: "Incorrect birthdate input or format. Format must be YYYY-MM-DD."
         });
         return;
     }
@@ -254,7 +254,7 @@ const updateUserDetails = (req, res, next) => { // separate username and passwor
     if (!utils.checkDate(birthdate)) {
         res.status(400).json({
             successful: false,
-            message: "Incorrect birthdate input format. Format must be YYYY-MM-DD."
+            message: "Incorrect birthdate input or format. Format must be YYYY-MM-DD."
         });
         return;
     }
