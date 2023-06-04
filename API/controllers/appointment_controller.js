@@ -325,7 +325,13 @@ const updateAppointment = (req, res, next) => { // can only update schedule (res
 
                 if (selectRows.length > 0) {
 
-                    if (reservedAt == selectRows[0].reserved_at) { // checks if no changes were made in the existing appointment
+                    if (selectRows[0].status_id == 4) { // checks if the appointment was cancelled
+                        res.status(400).json({
+                            successful: true,
+                            message: "The appointment was already cancelled, it cannot be updated anymore."
+                        });
+                    }
+                    else if (reservedAt == selectRows[0].reserved_at) { // checks if no changes were made in the existing appointment
                         res.status(200).json({
                             successful: true,
                             message: "No changes were made, same schedule details are entered."
@@ -510,12 +516,11 @@ const acceptAppointment = (req, res, next) => {
                 if (selectRows.length > 0) {
 
                     if (selectRows[0].status_id == 4) { // checks if the appointment was cancelled
-                        res.status(200).json({
+                        res.status(400).json({
                             successful: true,
                             message: "The appointment was already cancelled, it cannot be accepted anymore."
                         });
                     }
-
                     else if (selectRows[0].status_id == 1) { // checks if the appointment was already accepted
                         res.status(200).json({
                             successful: true,
