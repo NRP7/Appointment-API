@@ -17,6 +17,14 @@ const bookAppointment = (req, res, next) => {
         return;
     }
 
+    if (!utils.isNumber([psychologistId, patientId])) { // checks if the psychologist or patient Id is not in number data type
+        res.status(400).json({
+            successful: false,
+            message: "Incorrect psychologist or patient Id data type."
+        });
+        return;
+    }
+
     if (!utils.isSameId(psychologistId, patientId)) { // checks if the same id is entered in psychologistId and patientId
         res.status(400).json({
             successful: false,
@@ -28,7 +36,7 @@ const bookAppointment = (req, res, next) => {
     if (!utils.isString([reservedDate, reservedTime])) { // checks if the reserved date and time are not in string data type
         res.status(400).json({
             successful: false,
-            message: "Incorrect reservation detail(s) data type."
+            message: "Incorrect reservation date or time data type."
         });
         return;
     }
@@ -289,7 +297,7 @@ const updateAppointment = (req, res, next) => { // can only update schedule (res
     if (!utils.isString([reservedDate, reservedTime])) { // checks if the reserved date and time are not in string data type
         res.status(400).json({
             successful: false,
-            message: "Incorrect reservation detail(s) data type."
+            message: "Incorrect reservation date or time data type."
         });
         return;
     }
@@ -447,7 +455,7 @@ const cancelAppointment = (req, res, next) => {
     if (!utils.isString([reasonForCancellation])) { // checks if the reasonForCancellation is not in string data type
         res.status(400).json({
             successful: false,
-            message: "Incorrect reason for cancellation data type."
+            message: "Incorrect field data type."
         });
     }
 
@@ -463,6 +471,7 @@ const cancelAppointment = (req, res, next) => {
             }
             else {
                 if (selectRows.length > 0) {
+
                     if (selectRows[0].status_id == 4) { // checks if the appointment was already cancelled
                         res.status(200).json({
                             successful: true,
