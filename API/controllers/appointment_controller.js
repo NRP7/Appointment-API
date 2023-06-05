@@ -73,7 +73,7 @@ const bookAppointment = (req, res, next) => {
                 if (selectRows.length > 0) { // validates if the appointment/schedule already exists in the DB
                     res.status(400).json({
                         sucessful: false,
-                        message: "Schedule already exists."
+                        message: "Schedule already exist."
                     });
                 }
                 else {
