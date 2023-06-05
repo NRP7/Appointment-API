@@ -250,7 +250,7 @@ const viewUserDetails = (req, res, next) => {
             else if (selectRows.length == 0) { // checks if the user does not exist in the DB
                 res.status(400).json({
                     successful: false,
-                    message:"User does not exist."
+                    message:"User does not exists."
                 });
             }
             else {
@@ -430,7 +430,7 @@ const updateUserDetails = (req, res, next) => { // separate username and passwor
                 else {
                     res.status(400).json({ // response if the user, based on the user id, does not exist
                         successful: false,
-                        message: "User does not exist."
+                        message: "User does not exists."
                     });
                 }
             }
@@ -511,7 +511,7 @@ const updateUsername = (req, res, next) => {
                 else {
                     res.status(400).json({ // response if the user, based on the user id, does not exist
                         successful: false,
-                        message: "Username does not exist."
+                        message: "Username does not exists."
                     });
                 }
             }
@@ -620,7 +620,7 @@ const updateUserPassword = (req, res, next) => {
                 else {
                     res.status(400).json({ // response if the user, based on the username, does not exist
                         successful: false,
-                        message: "User does not exist."
+                        message: "User does not exists."
                     });
                 }
             }
@@ -670,7 +670,7 @@ const deleteUser = (req, res, next) => {
                 else {
                     res.status(400).json({ // response if the user, based on the user id, does not exist
                         successful: false,
-                        message: "User Id does not exist."
+                        message: "User Id does not exists."
                     });
                 }
             }
@@ -746,7 +746,7 @@ const login = (req, res, next) => { // to edit once bcrypt tutorial video is pro
                 else {
                     res.status(400).json({ // response if the user, based on the username, does not exist
                         successful: false,
-                        message: "User does not exist."
+                        message: "User does not exists."
                     });
                 }
             }
