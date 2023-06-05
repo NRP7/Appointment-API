@@ -332,6 +332,12 @@ const updateAppointment = (req, res, next) => { // can only update schedule (res
                             message: "The appointment was already cancelled. It is no longer valid."
                         });
                     }
+                    else if (selectRows[0].status_id == 5) { // checks if the appointment was already finish
+                        res.status(400).json({
+                            successful: false,
+                            message: "The appointment was already finish. It can no longer be updated."
+                        });
+                    }
                     else if (reservedAt == selectRows[0].reserved_at) { // checks if no changes were made in the existing appointment
                         res.status(200).json({
                             successful: true,
@@ -463,6 +469,12 @@ const cancelAppointment = (req, res, next) => {
                             message: "No changes were made, status was already updated."
                         });
                     }
+                    else if (selectRows[0].status_id == 5) { // checks if the appointment was already finish
+                        res.status(400).json({
+                            successful: false,
+                            message: "The appointment was already finish. It can no longer be cancelled."
+                        });
+                    }
                     else {
                         let appointmentStatusUpdateQuery = `UPDATE schedules SET status_id = 4, updated_at = NOW(), reason_for_cancellation = '${reasonForCancellation}' WHERE id = ${appointmentId}`;
 
@@ -520,6 +532,12 @@ const acceptAppointment = (req, res, next) => {
                         res.status(400).json({
                             successful: false,
                             message: "The appointment was already cancelled. It is no longer valid."
+                        });
+                    }
+                    else if (selectRows[0].status_id == 5) { // checks if the appointment was already finish
+                        res.status(400).json({
+                            successful: false,
+                            message: "The appointment was already finish. It can no longer be accepted."
                         });
                     }
                     else if (selectRows[0].status_id == 1) { // checks if the appointment was already accepted
