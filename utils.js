@@ -60,6 +60,20 @@ function isString(fieldsArr) {
 
 }
 
+function isNumber(fieldsArr) {
+    let result = false;
+
+    for(let i in fieldsArr){
+        if(typeof(fieldsArr[i]) != "number") {
+            return result;
+        }
+    }
+
+    result = true;
+    return result;
+
+}
+
 function containsWhitespace(field) {
 
     const regex = /\s/;
@@ -195,6 +209,7 @@ module.exports = {
     checkMandatoryField,
     isSameId,
     isString,
+    isNumber,
     containsWhitespace,
     checkEmail,
     checkPassword,
