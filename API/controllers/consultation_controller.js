@@ -3,33 +3,39 @@ const consultationModel = require('../models/diagnosis_model');
 const utils = require('../../utils');
 
 
-const addConsultation = (req, res, next) => {
+const addConsultation = (req, res, next) => { // get appointment id for patient and psych => RESOLVED; encoded_at DB field => RESOLVED; no need.
 
-    let psychologistId = req.body.psychologist_id;
-    let patientId = req.body.patient_id;
+    let appointmentId = req.body.appointment_id;
     let illnessId = req.body.illness_id;
-    let diagnosedAt = req.body.diagnosed_at;
+    //let diagnosedAt = req.body.diagnosed_at; // THIS SHOULD BE THE APPOINTMENT SCHEDULE - AUTOMATICALLY SET
     let note = req.body.note;
 
-    if (!utils.checkMandatoryFields([psychologistId, patientId, illnessId, diagnosedAt, note])) {
+    if (!utils.checkMandatoryFields([appointmentId, illnessId, note])) { // checks if there are empty or null fields
         res.status(404).json({
             successful: false,
-            message: "A consultation credential is not defined."
+            message: "A field is not defined."
         });
         return;
     }
 
-    if (!utils.isSameId(psychologistId, patientId)) {
+    if (!utils.isNumber([appointmentId, illnessId])) { // checks if the appointment or illness Id is not in number data type
         res.status(400).json({
             successful: false,
-            message: "The same ID is entered in both psychologist and patient fields."
+            message: "Incorrect appointment or illness Id data type."
+        });
+        return;
+    }
+
+    if (!utils.isString([note])) { // checks if the note is not in string data type
+        res.status(400).json({
+            successful: false,
+            message: "Incorrect note data type."
         });
     }
-    
+
     else {
         
-        let diagnosisSelectQuery = `SELECT psychologist_id, patient_id, illness_id, diagnosed_at FROM diagnoses WHERE psychologist_id = ${psychologistId} AND patient_id = ${patientId} AND illness_id = ${illnessId} AND diagnosed_at = '${diagnosedAt}'`;
-        
+        let diagnosisSelectQuery = `SELECT psychologist_id, patient_id, illness_id, diagnosed_at FROM diagnoses WHERE psychologist_id = (SELECT s.psychologist_id FROM schedules s WHERE s.id = ${appointmentId}) AND patient_id = (SELECT s.patient_id FROM schedules s WHERE s.id = ${appointmentId}) AND illness_id = ${illnessId} AND diagnosed_at = (SELECT reserved_at FROM schedules WHERE id = ${appointmentId})`;
 
         database.db.query(diagnosisSelectQuery, (selectErr, selectRows, selectResult) => {
             if (selectErr) {
@@ -39,28 +45,90 @@ const addConsultation = (req, res, next) => {
                 });
             }
             else {
-                if (selectRows.length > 0) {
+                if (selectRows.length > 0) { // checks if the consultation already exist
                     res.status(400).json({
                         sucessful: false,
                         message: "Consultation already exists."
                     });
                 }
                 else {
-                    
-                    let diagnosisInsertQuery = `INSERT INTO diagnoses SET ?`;
-                    let diagnosisObj = consultationModel.diagnosis_model(psychologistId, patientId, illnessId, diagnosedAt, note);
 
-                    database.db.query(diagnosisInsertQuery, diagnosisObj, (insertErr, insertRows, insertResult) => {
-                        if (insertErr) {
+                    let appointmentUserIdSelectQuery = `SELECT s.psychologist_id, s.patient_id, s.status_id FROM schedules s WHERE s.id = ${appointmentId}`;
+
+                    database.db.query(appointmentUserIdSelectQuery, (selErr, selRows, selResult) => {
+                        if (selErr) {
                             res.status(500).json({
                                 successful: false,
-                                message: insertErr
+                                message: selErr
+                            });
+                        }
+                        else if (selRows.length == 0) { // checks if the appointment, based on the appointment id, does not exist
+                            res.status(400).json({
+                                successful: false,
+                                message: "Appointment Id does not exists."
+                            });
+                        }
+                        else if (selRows[0].status_id == 2) { // checks if the appointment is still pending
+                            res.status(400).json({
+                                successful: false,
+                                message: "The appointment is still pending. Creating a consultation is not valid."
+                            });
+                        }
+                        else if (selRows[0].status_id == 4) { // checks if the appointment was cancelled
+                            res.status(400).json({
+                                successful: false,
+                                message: "The appointment was already cancelled. It is no longer valid."
                             });
                         }
                         else {
-                            res.status(200).json({
-                                successful: true,
-                                message: "Successfully added new diagnosis."
+
+                            let appointmentSchedSelectQuery = `SELECT reserved_at FROM schedules WHERE id = ${appointmentId}`;
+
+                            database.db.query(appointmentSchedSelectQuery, (err, rows, result) => {
+                                if (err) {
+                                    res.status(500).json({
+                                        successful: false,
+                                        message: err
+                                    });
+                                }
+                                else {
+                                    
+                                    let psychologistId = selRows[0].psychologist_id;
+                                    let patientId = selRows[0].patient_id;
+                                    let diagnosedAt = rows[0].reserved_at;
+
+                                    let diagnosisInsertQuery = `INSERT INTO diagnoses SET ?`;
+
+                                    let diagnosisObj = consultationModel.diagnosis_model(psychologistId, patientId, illnessId, diagnosedAt, note);
+
+                                    database.db.query(diagnosisInsertQuery, diagnosisObj, (insertErr, insertRows, insertResult) => {
+                                        if (insertErr) {
+                                            res.status(500).json({
+                                                successful: false,
+                                                message: insertErr
+                                            });
+                                        }
+                                        else {
+
+                                            let updateStatusReservationQuery = `UPDATE schedules SET status_id = 5 WHERE id = ${appointmentId}`;
+
+                                            database.db.query(updateStatusReservationQuery, (updateErr, updateRows, updateResult) => { 
+                                                if (updateErr) {
+                                                    res.status(500).json({
+                                                        successful: false,
+                                                        message: updateErr
+                                                    });
+                                                }
+                                                else {
+                                                    res.status(200).json({ // response if the consultation was successfully created and added to the DB
+                                                        successful: true,
+                                                        message: "Successfully added new diagnosis."
+                                                    });
+                                                }
+                                            });
+                                        }
+                                    });
+                                }
                             });
                         }
                     });
@@ -73,36 +141,19 @@ const addConsultation = (req, res, next) => {
 
 const viewConsultationResult = (req, res, next) => {
     const consultationId = req.params.id;
-    // const psychologistId = req.params.psychologist_id;
-    // const patientId = req.params.patient_id;
-    // const psychologistUserName = req.params.psychologist_username;
-    // const patientUserName = req.params.patient_username;
 
-    if (!utils.checkMandatoryField(consultationId)) {
+    if (!utils.checkMandatoryField(consultationId)) { // checks if there are empty or null fields
         res.status(404).json({
             successful: false,
             message: "Consultation Id is missing."
         });
     }
+    else {//be specific with naming; add appointment detail => RESOLVED
 
-    // if(!utils.isSameId(psychologistUserName, patientUserName)){
-    //     res.status(400).json({
-    //         successful: false,
-    //         message: "The same username is entered in both psychologist and patient fields."
-    //     });
-    // }
-
-    else {
-
-        let consultationViewQuery = `SELECT d.id AS Id, CONCAT(first_name, ' ', last_name) AS Psychologist, (SELECT CONCAT(first_name, ' ', last_name) AS Patient FROM users u WHERE u.id = d.patient_id) AS Patient, i.name AS Illness, DATE_FORMAT(diagnosed_at, '%Y-%m-%d') AS Date, TIME(diagnosed_at) AS Time, d.note AS Note FROM users u
+        let consultationViewQuery = `SELECT CONCAT(first_name, ' ', last_name) AS psychologist, (SELECT CONCAT(first_name, ' ', last_name) AS Patient FROM users u WHERE u.id = d.patient_id) AS patient, i.name AS illness, DATE_FORMAT(diagnosed_at, '%Y-%m-%d') AS 'consultation_date', TIME(diagnosed_at) AS 'consultation_time', d.note AS note FROM users u
         JOIN diagnoses d ON u.id = d.psychologist_id
         JOIN illnesses i ON d.illness_id = i.id
         WHERE d.id = ${consultationId}`;
-        // WHERE d.id = ${consultationId}`;
-        // // let consultationViewQuery = `SELECT CONCAT(first_name, ' ', last_name) AS Psychologist, (SELECT CONCAT(first_name, ' ', last_name) AS Patient FROM users u WHERE d.patient_id = u.id) AS Patient, i.name AS Illness, DATE_FORMAT(diagnosed_at, '%Y-%m-%d') AS Date, TIME(diagnosed_at) AS Time, d.note AS Note FROM users u
-        // JOIN diagnoses d ON u.id = d.psychologist_id
-        // JOIN illnesses i ON d.illness_id = i.id
-        // WHERE d.psychologist_id = u.id AND u.username = '${psychologistUserName}' AND d.patient_id = (SELECT id FROM users WHERE username = '${patientUserName}')`;
 
         database.db.query(consultationViewQuery, (viewErr, viewRows, viewResult) => {
 
@@ -112,14 +163,14 @@ const viewConsultationResult = (req, res, next) => {
                     message: viewErr
                 });
             }
-            else if (viewRows.length == 0) {
+            else if (viewRows.length == 0) { // checks if there are no consultation in the DB or the DB table is empty 
                 res.status(400).json({
                     successful: false,
-                    message: "Consultation Id does not exist."
+                    message: "Consultation does not exists."
                 });
             }
             else {
-                res.status(200).json({
+                res.status(200).json({ // response if fetching the consultation result was successful
                     successful: true,
                     message: "Successfully got the consultation details",
                     data: viewRows
@@ -130,41 +181,28 @@ const viewConsultationResult = (req, res, next) => {
 }
 
 
-const updateConsultation = (req, res, next) => {
+const updateConsultation = (req, res, next) => { // can only change illnessId, diagnosedAt, and note => RESOLVED; UPDATE: Can only update note. => RESOLVED`
     let consultationId = req.params.id;
 
-    let psychologistId = req.body.psychologist_id;
-    let patientId = req.body.patient_id;
-    let illnessId = req.body.illness_id;
-    let diagnosedAt = req.body.diagnosed_at;
     let note = req.body.note;
 
-    if (!utils.checkMandatoryFields([consultationId, psychologistId, patientId, illnessId, diagnosedAt, note])) {
+    if (!utils.checkMandatoryFields([consultationId, note])) { // checks if there are empty or null fields
         res.status(404).json({
             successful: false,
-            message: "A consultation credential is not defined."
+            message: "A field is not defined."
         });
         return;
     }
 
-    if (!utils.isSameId(psychologistId, patientId)) {
+    if (!utils.isString([note])) { // checks if the note is not in string data type
         res.status(400).json({
             successful: false,
-            message: "The same ID is entered in both psychologist and patient fields."
-        });
-        return;
-    }
-
-    if (!utils.isString([diagnosedAt, note])) {
-        res.status(400).json({
-            successful: false,
-            message: "Incorrect consultation credential format."
+            message: "Incorrect note format."
         });
     }
-
     else {
 
-        let diagnosisSelectAllQuery = `SELECT d.id, d.psychologist_id, d.patient_id, d.illness_id, DATE_FORMAT(d.diagnosed_at, '%Y-%m-%d %k:%i:%s') AS diagnosed_at, d.note FROM diagnoses d WHERE d.id = ${consultationId}`;
+        let diagnosisSelectAllQuery = `SELECT d.note FROM diagnoses d WHERE d.id = ${consultationId}`;
 
         database.db.query(diagnosisSelectAllQuery, (selectErr, selectRows, selectResult) => {
             if (selectErr) {
@@ -176,16 +214,15 @@ const updateConsultation = (req, res, next) => {
             else {
                 if (selectRows.length > 0) {
 
-                    if (psychologistId == selectRows[0].psychologist_id && patientId == selectRows[0].patient_id && illnessId == selectRows[0].illness_id && diagnosedAt == selectRows[0].diagnosed_at && note == selectRows[0].note) {
-                        res.status(400).json({
-                            successful: false,
+                    if (note == selectRows[0].note) { // checks if no changes were made in the existing consultation note
+                        res.status(200).json({
+                            successful: true,
                             message: "No changes were made, same diagnosis details are entered."
                         }); 
-                        // console.log(selRows[0].diagnosed_at);
                     }
                     else {
 
-                        let diagnosisUpdateQuery = `UPDATE diagnoses SET psychologist_id = ${psychologistId}, patient_id = ${patientId}, illness_id = ${illnessId}, diagnosed_at = '${diagnosedAt}', note = '${note}' WHERE id = ${consultationId}`;
+                        let diagnosisUpdateQuery = `UPDATE diagnoses SET note = '${note}', updated_at = NOW() WHERE id = ${consultationId}`;
 
                         database.db.query(diagnosisUpdateQuery, (updateErr, updateRows, updateResult) => {
                             if (updateErr) {
@@ -195,18 +232,18 @@ const updateConsultation = (req, res, next) => {
                                 });
                             }
                             else {
-                                res.status(200).json({
+                                res.status(200).json({ // response if the existing consultation note was successfully updated
                                     successful: true,
-                                    message: "Successfully updated consultation detail(s)."
+                                    message: "Successfully updated consultation note detail(s)."
                                 });
                             }
                         });
                     }
                 } 
                 else {
-                    res.status(400).json({
+                    res.status(400).json({ // response if the consultation, based on the consultation id, does not exist
                         successful: false,
-                        message: "Consultation Id does not exist."
+                        message: "Consultation Id does not exists."
                     });
                 }
             }
@@ -219,10 +256,10 @@ const archiveConsultation = (req, res, next) => {
 
     const consultationId = req.params.id;
 
-    if (!utils.checkMandatoryField(consultationId)) {
+    if (!utils.checkMandatoryField(consultationId)) { // checks if there are empty or null fields
         res.status(404).json({
             successful: false,
-            message: "A consultation credential is not defined."
+            message: "Consultation Id is missing."
         });
     }
     
@@ -262,7 +299,7 @@ const archiveConsultation = (req, res, next) => {
                                     });
                                 }
                                 else {
-                                    res.status(200).json({
+                                    res.status(200).json({ // response if the existing consultation was successfully archived
                                         successful: true,
                                         message: "Successfully archived a diagnosis."
                                     });
@@ -272,9 +309,9 @@ const archiveConsultation = (req, res, next) => {
                     });
                 }
                 else {
-                    res.status(400).json({
+                    res.status(400).json({ // response if the consultation, based on the consultation id, does not exist
                         successful: false,
-                        message: "Consultation Id does not exist."
+                        message: "Consultation Id does not exists."
                     });
                 }
             }
