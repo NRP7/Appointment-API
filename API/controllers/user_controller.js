@@ -26,10 +26,10 @@ const addUser = (req, res, next) => {
         return;
     }
 
-    if (!utils.isString([username, password, firstName, lastName, birthdate, gender, address, email, contactNumber])) { // checks if a field is not in string data type
+    if (!utils.isNumber([role])) { // checks if the role is not in number data type
         res.status(400).json({
             successful: false,
-            message: "Incorrect user detail(s) data type."
+            message: "Incorrect role data type."
         });
         return;
     }
@@ -38,6 +38,14 @@ const addUser = (req, res, next) => {
         res.status(400).json({
             successful: false,
             message: "Incorrect role input."
+        });
+        return;
+    }
+
+    if (!utils.isString([username, password, firstName, lastName, birthdate, gender, address, email, contactNumber])) { // checks if a field is not in string data type
+        res.status(400).json({
+            successful: false,
+            message: "Incorrect user detail(s) data type."
         });
         return;
     }
