@@ -209,7 +209,6 @@ const bookAppointment = (req, res, next) => {
     }
 }
 
-// checks if there are no appointments in the DB or the DB table is empty
 
 const viewPsychologistAppointments = (req, res, next) => { // separate view all appointments for patient and psych Question: paanong separate? => RESOLVED
     let userId = req.params.id;
