@@ -50,10 +50,10 @@ const addUser = (req, res, next) => {
         return;
     }
 
-    if (utils.containsWhitespace(username)) { // validates the input and format of the username
+    if (!utils.checkUsername(username)) { // validates the input and format of the username
         res.status(400).json({
             successful: false,
-            message: "Username must not contain any spaces."
+            message: "Incorrect username format. Username must be: At least 6 characters long, Must not contain any spaces, and Only accept certain special characters."
         });
         return;
     } 
@@ -61,7 +61,7 @@ const addUser = (req, res, next) => {
     if (!utils.checkPassword(password)) { // validates the input and format of the password
         res.status(400).json({
             successful: false,
-            message: "Incorrect password format. Password must be: Atleast 8 characters long, Contains alphanumeric upper and lower case letters, and Contains special characters"
+            message: "Incorrect password format. Password must be: At least 8 characters long, Contains alphanumeric upper and lower case letter/s, and Contains special character/s."
         });
         return;
     }
@@ -461,10 +461,10 @@ const updateUsername = (req, res, next) => {
         return;
     }
 
-    if (utils.containsWhitespace(username)){ // validates the input and format of the username
+    if (!utils.checkUsername(username)) { // validates the input and format of the username
         res.status(400).json({
             successful: false,
-            message: "Username must not contain any spaces."
+            message: "Incorrect username format. Username must be: At least 6 characters long, Must not contain any spaces, and Only accept certain special characters."
         });
     } 
 
@@ -542,10 +542,10 @@ const updateUserPassword = (req, res, next) => {
         return;
     }
 
-    if (utils.containsWhitespace(username)){ // validates the input and format of the username
+    if (!utils.checkUsername(username)) { // validates the input and format of the username
         res.status(400).json({
             successful: false,
-            message: "Username must not contain any spaces."
+            message: "Incorrect username format. Username must be: At least 6 characters long, Must not contain any spaces, and Only accept certain special characters."
         });
         return;
     } 
@@ -553,7 +553,7 @@ const updateUserPassword = (req, res, next) => {
     if (!utils.checkPassword(currPassword)) { // validates the input and format of the password
         res.status(400).json({
             successful: false,
-            message: "Incorrect password format. Password must be: Atleast 8 characters long, Contains alphanumeric upper and lower case letters, and Contains special characters"
+            message: "Incorrect password format. Password must be: At least 8 characters long, Contains alphanumeric upper and lower case letter/s, and Contains special character/s."
         });
         return;
     }
@@ -561,7 +561,7 @@ const updateUserPassword = (req, res, next) => {
     if (!utils.checkPassword(newPassword)) { // validates the input and format of the password
         res.status(400).json({
             successful: false,
-            message: "Incorrect password format. Password must be: Atleast 8 characters long, Contains alphanumeric upper and lower case letters, and Contains special characters"
+            message: "Incorrect password format. Password must be: At least 8 characters long, Contains alphanumeric upper and lower case letter/s, and Contains special character/s."
         });
         return;
     }
@@ -699,18 +699,18 @@ const login = (req, res, next) => { // to edit once bcrypt tutorial video is pro
         return;
     }
 
-    if (utils.containsWhitespace(username)){ // validates the input and format of the username
+    if (!utils.checkUsername(username)) { // validates the input and format of the username
         res.status(400).json({
             successful: false,
-            message: "Username must not contain any spaces."
+            message: "Incorrect username format. Username must be: At least 6 characters long, Must not contain any spaces, and Only accept certain special characters."
         });
         return;
-    } 
+    }
 
     if (!utils.checkPassword(password)) { // validates the input and format of the password
         res.status(400).json({
             successful: false,
-            message: "Incorrect password format. Password must be: Atleast 8 characters long, Contains alphanumeric upper and lower case letters, and Contains special characters"
+            message: "Incorrect password format. Password must be: At least 8 characters long, Contains alphanumeric upper and lower case letter/s, and Contains special character/s."
         });
     }
 
