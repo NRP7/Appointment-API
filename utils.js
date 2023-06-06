@@ -74,9 +74,9 @@ function isNumber(fieldsArr) {
 
 }
 
-function containsWhitespace(field) {
-
-    const regex = /\s/;
+function checkUsername(field) {
+    
+    const regex = /^[a-zA-Z0-9.\-_$@*!]{6,}$/;
     return regex.test(field);
 
 }
@@ -210,7 +210,7 @@ module.exports = {
     isSameId,
     isString,
     isNumber,
-    containsWhitespace,
+    checkUsername,
     checkEmail,
     checkPassword,
     toSentenceCase,
