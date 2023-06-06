@@ -73,7 +73,7 @@ const bookAppointment = (req, res, next) => {
                 if (selectRows.length > 0) { // validates if the appointment/schedule already exists in the DB
                     res.status(400).json({
                         sucessful: false,
-                        message: "Schedule already exist."
+                        message: "Schedule already exists."
                     });
                 }
                 else {
@@ -90,7 +90,7 @@ const bookAppointment = (req, res, next) => {
                         else if (psychRoleRows.length == 0) { // validates if the psychologist id does not exists in the DB
                             res.status(400).json({
                                 sucessful: false,
-                                message: "Psychologist id does not exist."
+                                message: "Psychologist id does not exists."
                             });
                         }
                         else if (psychRoleRows[0].role != 0) { // validates if the role psychologist id is not 0
@@ -113,7 +113,7 @@ const bookAppointment = (req, res, next) => {
                                 else if (patientRoleRows.length == 0) { // validates if the patient id does not exists in the DB
                                     res.status(400).json({
                                         sucessful: false,
-                                        message: "Patient id does not exist."
+                                        message: "Patient id does not exists."
                                     });
                                 }
                                 else if (patientRoleRows[0].role != 0) { // validates if the role patient id is not 1
@@ -430,7 +430,7 @@ const updateAppointment = (req, res, next) => { // can only update schedule (res
                 else {
                     res.status(400).json({ // response if the schedule, based on the appointment id, does not exist
                         successful: false,
-                        message: "Schedule does not exist."
+                        message: "Schedule does not exists."
                     });
                 }
             }
@@ -495,8 +495,8 @@ const cancelAppointment = (req, res, next) => {
                                 });
                             }
                             else {
-                                res.status(200).json({ // response if the appointment was successfully cancelled
-                                    successful: true,
+                                res.status(200).json({ 
+                                    successful: true,// response if the appointment was successfully cancelled
                                     message: "Successfully cancelled the appointment."
                                 });
                             }
@@ -506,7 +506,7 @@ const cancelAppointment = (req, res, next) => {
                 else {
                     res.status(400).json({ // response if the schedule, based on the appointment id, does not exist
                         successful: false,
-                        message: "Schedule does not exist."
+                        message: "Schedule does not exists."
                     });
                 }
             }
@@ -577,7 +577,7 @@ const acceptAppointment = (req, res, next) => {
                 else {
                     res.status(400).json({ // response if the schedule, based on the appointment id, does not exist
                         successful: false,
-                        message: "Schedule does not exist."
+                        message: "Schedule does not exists."
                     });
                 }
             }
