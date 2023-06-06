@@ -50,7 +50,7 @@ const addUser = (req, res, next) => {
         return;
     }
 
-    if (utils.containsWhitespace(username)){ // validates the input and format of the username
+    if (utils.containsWhitespace(username)) { // validates the input and format of the username
         res.status(400).json({
             successful: false,
             message: "Username must not contain any spaces."
