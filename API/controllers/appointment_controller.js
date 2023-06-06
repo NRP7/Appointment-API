@@ -278,7 +278,7 @@ const viewPatientAppointments = (req, res, next) => { // separate view all appoi
 }
 
 
-const updateAppointment = (req, res, next) => { // can only update schedule (reserved_at); add schedule validaiton for both patient and psych => RESOLVEDj
+const updateAppointment = (req, res, next) => { // can only update schedule (reserved_at); add schedule validaiton for both patient and psych => RESOLVED
     // update appointment to close => RESOLVED. Note: Once a consulation based on the appointment is added, the consultation status will automatically be updated to "Finished."
     let appointmentId = req.params.id;
 
@@ -494,8 +494,8 @@ const cancelAppointment = (req, res, next) => {
                                 });
                             }
                             else {
-                                res.status(200).json({ 
-                                    successful: true,// response if the appointment was successfully cancelled
+                                res.status(200).json({ // response if the appointment was successfully cancelled
+                                    successful: true,
                                     message: "Successfully cancelled the appointment."
                                 });
                             }
