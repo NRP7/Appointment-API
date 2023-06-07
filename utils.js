@@ -14,7 +14,7 @@ function checkMandatoryFields(fieldsArr) {
     }
     
     result = true;
-    return result
+    return result;
 
 }
 
@@ -30,7 +30,7 @@ function checkMandatoryField(field) {
     }
     
     result = true;
-    return result
+    return result;
 
 }
 
@@ -74,10 +74,10 @@ function isNumber(fieldsArr) {
 
 }
 
-function checkUsername(field) {
+function checkUsername(username) {
     
     const regex = /^[a-zA-Z0-9.\-_$@*!]{6,}$/;
-    return regex.test(field);
+    return regex.test(username);
 
 }
 
@@ -98,11 +98,13 @@ function checkDate(date) {
         return result;
     }
 
+
     let parts = date.split('-');
-    //let year = parseInt(parts[0], 10);
+
     let month = ( parts[1][0] === '0') ? parseInt(parts[1][1], 10) : parseInt(parts[1], 10);
     let day = ( parts[2][0] === '0') ? parseInt(parts[2][1], 10) : parseInt(parts[2], 10);
-    
+
+
     if (month < 1 || month > 12) {
         return result;
     }
