@@ -5,16 +5,13 @@ const consultationRouter = express.Router();
 
 // POST Method(s)
 consultationRouter.post('/add-consultation', consultationController.addConsultation);
+consultationRouter.post('/archive-consultation-result/:id', consultationController.archiveConsultation);
 
 // GET Method(s)
-//consultationRouter.get('/view-consultation-result/:id', consultationController.viewConsultationResult);
-// consultationRouter.get('/view-consultation-result/:psychologist_id/:patient_id', consultationController.viewConsultationResult);
 consultationRouter.get('/view-consultation-result/:id', consultationController.viewConsultationResult);
 
 // PUT Method(s)
 consultationRouter.put('/update-consultation-result/:id', consultationController.updateConsultation);
 
-// DELETE Method(s)
-consultationRouter.delete('/archive-consultation-result/:id', consultationController.archiveConsultation);
 
 module.exports = consultationRouter;
