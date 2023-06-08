@@ -66,7 +66,7 @@ const addUser = (req, res, next) => {
         return;
     }
 
-    if (!utils.checkDate(birthdate)) { // validates the input and format of the birthdate
+    if (!utils.checkBirthdate(birthdate)) { // validates the input and format of the birthdate
         res.status(400).json({
             successful: false,
             message: "Incorrect birthdate input or format. Format must be YYYY-MM-DD."
@@ -189,7 +189,7 @@ const addUser = (req, res, next) => {
 
 
 const viewAllUsers = (req, res, next) => { // Remove Id and Password - DB fields, as is. => RESOLVED
-    let usersSelectQuery = `SELECT username, first_name, last_name, role, contact_number, email FROM users`;
+    let usersSelectQuery = `SELECT username, first_name, last_name, role, contact_number, email, DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') AS created_at, DATE_FORMAT(updated_at, '%Y-%m-%d %H:%i:%s') AS updated_at FROM users`;
     
     database.db.query(usersSelectQuery, (selectErr, selectRows, selectResult) => {
 
@@ -237,7 +237,7 @@ const viewUserDetails = (req, res, next) => {
         });
     }
     else { // Remove Id and Password. => RESOLVED
-        let userSelectQuery = `SELECT role, username, first_name, last_name, DATE_FORMAT(birthdate, '%Y-%m-%d') AS birthdate, gender, address, email, contact_number, DATE_FORMAT(created_at, '%Y-%m-%d') AS created_at FROM users u WHERE u.id = ${userId}`;
+        let userSelectQuery = `SELECT role, username, first_name, last_name, DATE_FORMAT(birthdate, '%Y-%m-%d') AS birthdate, gender, address, email, contact_number, DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') AS created_at, DATE_FORMAT(updated_at, '%Y-%m-%d %H:%i:%s') AS updated_at FROM users u WHERE u.id = ${userId}`;
     
         database.db.query(userSelectQuery, (selectErr, selectRows, selectResult) => {
 
@@ -304,7 +304,7 @@ const updateUserDetails = (req, res, next) => { // separate username and passwor
         return;
     }
 
-    if (!utils.checkDate(birthdate)) { // validates the input and format of the birthdate
+    if (!utils.checkBirthdate(birthdate)) { // validates the input and format of the birthdate
         res.status(400).json({
             successful: false,
             message: "Incorrect birthdate input or format. Format must be YYYY-MM-DD."
@@ -337,7 +337,7 @@ const updateUserDetails = (req, res, next) => { // separate username and passwor
 
     else {
 
-        let userSelectQuery = `SELECT id FROM users WHERE id = '${userId}'`;
+        let userSelectQuery = `SELECT id FROM users WHERE id = ${userId}`;
         database.db.query(userSelectQuery, (selectErr, selectRows, selectResult) => {
             if (selectErr) {
                 res.status(500).json({
@@ -383,7 +383,7 @@ const updateUserDetails = (req, res, next) => { // separate username and passwor
                                     }
                                     else {
 
-                                        let contactNumSelectQuery = `SELECT contact_number FROM users WHERE contact_number = '${contactNumber}'`;
+                                        let contactNumSelectQuery = `SELECT id, contact_number FROM users WHERE contact_number = '${contactNumber}'`;
 
                                         database.db.query(contactNumSelectQuery, (contactNumSelErr,  contactNumSelRows, contactNumSelResult) => {
                                             if (contactNumSelErr) {
@@ -402,7 +402,7 @@ const updateUserDetails = (req, res, next) => { // separate username and passwor
                                                 else {
 
                                                     //ALLOW THE UPDATING OF USER DETAILS
-                                                    let userUpdateQuery = `UPDATE users SET first_name = '${firstName}', last_name = '${lastName}', birthdate = '${birthdate}', gender = '${gender}', address = '${address}', email = '${email}', contact_number = '${contactNumber}', updated_at = NOW() WHERE id = '${userId}'`;
+                                                    let userUpdateQuery = `UPDATE users SET first_name = '${firstName}', last_name = '${lastName}', birthdate = '${birthdate}', gender = '${gender}', address = '${address}', email = '${email}', contact_number = '${contactNumber}', updated_at = NOW() WHERE id = ${userId}`;
 
                                                     database.db.query(userUpdateQuery, (updateErr, updateRows, updateResult) => {
                                                         if (updateErr) {
@@ -639,7 +639,7 @@ const deleteUser = (req, res, next) => {
         });
     }
     else {
-        let userSelectQuery = `SELECT id FROM users WHERE id = '${userId}'`;
+        let userSelectQuery = `SELECT id, role FROM users WHERE id = ${userId}`;
 
         database.db.query(userSelectQuery, (selectErr, selectRows, selectResult) => {
             if (selectErr) {
@@ -650,22 +650,94 @@ const deleteUser = (req, res, next) => {
             }
             else {
                 if (selectRows.length > 0) {
-                    let userDeleteQuery = `DELETE FROM users WHERE id = '${userId}'`;
 
-                    database.db.query(userDeleteQuery, (deleteErr, deleteRows, deleteResult) => {
-                        if (deleteErr) {
-                            res.status(500).json({
-                                successful: false,
-                                message: deleteErr
-                            });
-                        }
-                        else {
-                            res.status(200).json({ // response if the user was successfully deleted
-                                successful: true,
-                                message: "Successfully deleted a user."
-                            });
-                        }
-                    });
+                    if (selectRows[0].role == 0) {
+
+                        let checkExistingPsychDataQuery = `SELECT id FROM schedules WHERE psychologist_id = ${userId}`;
+
+                        database.db.query(checkExistingPsychDataQuery, (dataPsychSelErr, dataPsychSelRows, dataPsychSelResult) => {
+                            if (dataPsychSelErr) {
+                                res.status(500).json({
+                                    successful: false,
+                                    message: dataPsychSelErr
+                                });
+                            }
+                            else if (dataPsychSelRows.length != 0) { // validates if the psychologist has an existing data in other parts of the DB
+                                res.status(400).json({
+                                    successful: false,
+                                    message: "Cannot delete the user. The user has an existing data in other parts of the system."
+                                });
+                            }
+                            else {
+
+                                let availabilityDeleteQuery = `DELETE FROM psychologist_availabilities WHERE psychologist_id = ${userId}`;
+
+                                database.db.query(availabilityDeleteQuery, (availabilityDelErr, availabilityDelRows, availabilityDelResult) => {
+                                    if (availabilityDelErr) {
+                                        res.status(500).json({
+                                            successful: false,
+                                            message: availabilityDelErr
+                                        });
+                                    }
+                                    else {
+                                        let userDeleteQuery = `DELETE FROM users WHERE id = ${userId}`;
+
+                                        database.db.query(userDeleteQuery, (deleteErr, deleteRows, deleteResult) => {
+                                            if (deleteErr) {
+                                                res.status(500).json({
+                                                    successful: false,
+                                                    message: deleteErr
+                                                });
+                                            }
+                                            else {
+                                                res.status(200).json({ // response if the user was successfully deleted
+                                                    successful: true,
+                                                    message: "Successfully deleted a user."
+                                                });
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+                        });
+                    }
+                    else {
+
+                        let checkExistingPatientDataQuery = `SELECT id FROM schedules WHERE patient_id = ${userId}`;
+
+                        database.db.query(checkExistingPatientDataQuery, (dataPatientSelErr, dataPatientSelRows, dataPatientSelResult) => {
+                            if (dataPatientSelErr) {
+                                res.status(500).json({
+                                    successful: false,
+                                    message: dataPatientSelErr
+                                });
+                            }
+                            else if (dataPatientSelRows.length != 0) { // validates if the patient has an existing data in other parts of the DB
+                                res.status(400).json({
+                                    successful: false,
+                                    message: "Cannot delete the user. The user has an existing data in other parts of the system."
+                                });
+                            }
+                            else {
+                                let userDeleteQuery = `DELETE FROM users WHERE id = ${userId}`;
+
+                                database.db.query(userDeleteQuery, (deleteErr, deleteRows, deleteResult) => {
+                                    if (deleteErr) {
+                                        res.status(500).json({
+                                            successful: false,
+                                            message: deleteErr
+                                        });
+                                    }
+                                    else {
+                                        res.status(200).json({ // response if the user was successfully deleted
+                                            successful: true,
+                                            message: "Successfully deleted a user."
+                                        });
+                                    }
+                                });
+                            }
+                        });
+                    }
                 }
                 else {
                     res.status(400).json({ // response if the user, based on the user id, does not exist
