@@ -88,6 +88,46 @@ function checkPassword(password) {
 
 }
 
+function checkBirthdate(birthdate) {
+
+    let result = false;
+
+    const regex = /^\d{4}-\d{2}-\d{2}$/;
+
+    if (!regex.test(birthdate)){
+        return result;
+    }
+
+    let parts = birthdate.split('-');
+
+    let year = parseInt(parts[0], 10);
+    let month = (parts[1][0] === '0') ? parseInt(parts[1][1], 10) : parseInt(parts[1], 10);
+    let day = (parts[2][0] === '0') ? parseInt(parts[2][1], 10) : parseInt(parts[2], 10);
+    
+    let birthdateTimestamp = new Date(birthdate).getTime();
+    let currentTimestamp = Date.now(); 
+    let currentYear = new Date().getFullYear();
+
+    if (year > currentYear) {
+        return result;
+    }
+    
+    if (month < 1 || month > 12) {
+        return result;
+    }
+
+    if (day < 1 || day > 31) {
+        return result;
+    }
+
+    if (birthdateTimestamp >= currentTimestamp) {
+        return result;
+    }
+
+    result = true;
+    return result;
+}
+
 function checkDate(date) {
 
     let result = false;
@@ -98,13 +138,12 @@ function checkDate(date) {
         return result;
     }
 
-
     let parts = date.split('-');
 
     let month = ( parts[1][0] === '0') ? parseInt(parts[1][1], 10) : parseInt(parts[1], 10);
     let day = ( parts[2][0] === '0') ? parseInt(parts[2][1], 10) : parseInt(parts[2], 10);
-
-
+    
+    
     if (month < 1 || month > 12) {
         return result;
     }
@@ -126,7 +165,7 @@ function checkTime(time) {
 
     const regex = /^(?:[01][0-9]|2[0-3]):[0-5][0-9](?::[0-5][0-9])?$/;
 
-    const timeSlot = ["08", "09", "10", "11", "13", "14", "15", "16", "17"];
+    const timeSlot = ["08", "09", "10", "11", "13", "14", "15", "16"];
 
     if (!regex.test(time)) {
         return result;
@@ -149,6 +188,27 @@ function checkTime(time) {
     result = true;
     return result;
     
+}
+
+function checkReservation(reservedDate, reservedTime) {
+
+    let result = false;
+
+    let formattedTime = checkTimeFormat(reservedTime);
+
+    let reservation = `${reservedDate} ${formattedTime}`;
+
+    let reservationTimeStamp = new Date(reservation).getTime();
+    let currentTimestamp = Date.now(); 
+
+
+    if (reservationTimeStamp <= currentTimestamp) {
+        return result;
+    }
+
+    result = true;
+    return result;
+
 }
 
 function checkTimeFormat(time) {
@@ -193,7 +253,9 @@ module.exports = {
     checkPassword,
     toSentenceCase,
     checkContactNumber,
+    checkBirthdate,
     checkDate,
     checkTime,
-    checkTimeFormat
+    checkTimeFormat,
+    checkReservation
 }
