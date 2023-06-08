@@ -277,7 +277,7 @@ const viewPatientAppointments = (req, res, next) => { // separate view all appoi
         else {
             res.status(200).json({ // response if fetching the patient's appointment/s was successful
                 successful: true,
-                message: "Successfully got all appointments",
+                message: "Successfully got all the appointments",
                 data: selectRows
             });
         }
