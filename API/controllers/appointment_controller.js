@@ -54,6 +54,14 @@ const bookAppointment = (req, res, next) => {
             successful: false,
             message: "Incorrect reserved time input or format. Format must either be in HH:MM:SS or HH:MM with minutes and seconds in 00."
         });
+        return;
+    } 
+
+    if (!utils.checkReservation(reservedDate, reservedTime)) { // validates if the reservation date and time is not a past date and time than the current date and time
+        res.status(400).json({
+            successful: false,
+            message: "Incorrect reservation input. The input should not be a past date and time than the current date and time."
+        });
     } 
     
     else {
@@ -78,7 +86,7 @@ const bookAppointment = (req, res, next) => {
                 }
                 else {
 
-                    let psychRoleSelectQuery = `SELECT u.role FROM users u JOIN schedules s ON u.id = s.id WHERE u.id = ${psychologistId}`;
+                    let psychRoleSelectQuery = `SELECT u.id, u.role FROM users u WHERE u.id = ${psychologistId}`;
 
                     database.db.query(psychRoleSelectQuery, (psychRoleErr, psychRoleRows, psychRoleResult) => {
                         if (psychRoleErr) {
@@ -101,7 +109,7 @@ const bookAppointment = (req, res, next) => {
                         }
                         else {
 
-                            let patientRoleSelectQuery = `SELECT u.role FROM users u JOIN schedules s ON u.id = s.id WHERE u.id = ${patientId}`;
+                            let patientRoleSelectQuery = `SELECT u.role FROM users u WHERE u.id = ${patientId}`;
 
                             database.db.query(patientRoleSelectQuery, (patientRoleErr, patientRoleRows, patientRoleResult) => {
                                 if (patientRoleErr) {
@@ -116,7 +124,7 @@ const bookAppointment = (req, res, next) => {
                                         message: "Patient id does not exists."
                                     });
                                 }
-                                else if (patientRoleRows[0].role != 0) { // validates if the role patient id is not 1
+                                else if (patientRoleRows[0].role != 1) { // validates if the role patient id is not 1
                                     res.status(400).json({
                                         sucessful: false,
                                         message: "The id entered is not a patient."
@@ -140,7 +148,7 @@ const bookAppointment = (req, res, next) => {
                                         }
                                         else {
 
-                                            let specificPsychSchedSelQuery = `SELECT s.id FROM schedules s WHERE psychologist_id = ${psychologistId} AND reserved_at = '${reservedAt}' AND status_id = 1`;
+                                            let specificPsychSchedSelQuery = `SELECT s.id FROM schedules s WHERE psychologist_id = ${psychologistId} AND reserved_at = '${reservedAt}' AND status_id = 1 OR psychologist_id = ${psychologistId} AND reserved_at = '${reservedAt}' AND status_id = 2`;
 
                                             database.db.query(specificPsychSchedSelQuery, (psychSchedErr, psychSchedRows, psychSchedResult) => {
                                                 if (psychSchedErr) {
@@ -152,7 +160,7 @@ const bookAppointment = (req, res, next) => {
                                                 else if (psychSchedRows.length > 0) { // checks if the psychologist already has an existing reservation based on the given date and time
                                                     res.status(400).json({
                                                         sucessful: false,
-                                                        message: "The psychologist you selected already has an appointment set on that date and time."
+                                                        message: "A patient already has an existing appointment set with the psychologist you selected based on the given date and time."
                                                     });
                                                 }
                                                 else {
@@ -213,7 +221,7 @@ const bookAppointment = (req, res, next) => {
 const viewPsychologistAppointments = (req, res, next) => { // separate view all appointments for patient and psych Question: paanong separate? => RESOLVED
     let userId = req.params.id;
 
-    let appointmentSelectQuery = `SELECT CONCAT(first_name, ' ', last_name) AS psychologist, (SELECT CONCAT(first_name, ' ', last_name) AS Patient FROM users u WHERE u.id = s.patient_id) AS patient, DATE_FORMAT(reserved_at, '%Y-%m-%d') AS 'appointment_date', TIME_FORMAT(reserved_at, '%H:%i') AS 'appointment_time', st.name AS status FROM schedules s
+    let appointmentSelectQuery = `SELECT CONCAT(first_name, ' ', last_name) AS psychologist, (SELECT CONCAT(first_name, ' ', last_name) AS Patient FROM users u WHERE u.id = s.patient_id) AS patient, DATE_FORMAT(reserved_at, '%Y-%m-%d') AS 'appointment_date', TIME_FORMAT(reserved_at, '%H:%i') AS 'appointment_time', st.name AS status, DATE_FORMAT(s.created_at, '%Y-%m-%d %H:%i:%s') AS created_at, DATE_FORMAT(s.updated_at, '%Y-%m-%d %H:%i:%s') AS updated_at FROM schedules s
     JOIN users u ON s.psychologist_id = u.id
     JOIN statuses st ON s.status_id = st.id
     WHERE u.id = ${userId}`;
@@ -247,7 +255,7 @@ const viewPsychologistAppointments = (req, res, next) => { // separate view all 
 const viewPatientAppointments = (req, res, next) => { // separate view all appointments for patient and psych Question: paanong separate? => RESOLVED
     let userId = req.params.id;
 
-    let appointmentSelectQuery = `SELECT CONCAT(first_name, ' ', last_name) AS patient, (SELECT CONCAT(first_name, ' ', last_name) AS Psychologist FROM users u WHERE u.id = s.psychologist_id) AS psychologist, DATE_FORMAT(reserved_at, '%Y-%m-%d') AS 'appointment_date', TIME_FORMAT(reserved_at, '%H:%i') AS 'appointment_time', st.name AS status FROM schedules s
+    let appointmentSelectQuery = `SELECT CONCAT(first_name, ' ', last_name) AS patient, (SELECT CONCAT(first_name, ' ', last_name) AS Psychologist FROM users u WHERE u.id = s.psychologist_id) AS psychologist, DATE_FORMAT(reserved_at, '%Y-%m-%d') AS 'appointment_date', TIME_FORMAT(reserved_at, '%H:%i') AS 'appointment_time', st.name AS status, DATE_FORMAT(s.created_at, '%Y-%m-%d %H:%i:%s') AS created_at, DATE_FORMAT(s.updated_at, '%Y-%m-%d %H:%i:%s') AS updated_at FROM schedules s
     JOIN users u ON s.patient_id = u.id
     JOIN statuses st ON s.status_id = st.id
     WHERE u.id = ${userId}`;
@@ -313,6 +321,14 @@ const updateAppointment = (req, res, next) => { // can only update schedule (res
         res.status(400).json({
             successful: false,
             message: "Incorrect reserved time input or format. Format must either be in HH:MM:SS or HH:MM with minutes and seconds in 00."
+        });
+        return;
+    } 
+
+    if (!utils.checkReservation(reservedDate, reservedTime)) { // validates if the reservation date and time is not a past date and time than the current date and time
+        res.status(400).json({
+            successful: false,
+            message: "Incorrect reservation input. The input should not be a past date and time than the current date and time."
         });
     } 
 
