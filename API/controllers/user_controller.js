@@ -490,20 +490,41 @@ const updateUsername = (req, res, next) => {
                     }
                     else {
 
-                        let usernameUpdateQuery = `UPDATE users SET username = '${username}', updated_at = NOW() WHERE id = ${userId}`;
+                        let usernameSelQuery = `SELECT username FROM users WHERE username = '${username}'`;
 
-                        database.db.query(usernameUpdateQuery, (updateErr, updateRows, updateResult) => {
-                            if (updateErr) {
+                        database.db.query(usernameSelQuery, (usernameSelErr,  usernameSelRows, usernameSelResult) => {
+                            if (usernameSelErr) {
                                 res.status(500).json({
-                                    successful: false,
-                                    message: updateErr
+                                    sucessful: false,
+                                    message: usernameSelErr
                                 });
                             }
                             else {
-                                res.status(200).json({ // response if the username was successfully updated
-                                    successful: true,
-                                    message: "Successfully updated username."
-                                });
+                                if (usernameSelRows.length > 0) { // checks if the username already exists in the DB
+                                    res.status(400).json({
+                                        sucessful: false,
+                                        message: "Username already exists."
+                                    });
+                                }
+                                else {
+
+                                    let usernameUpdateQuery = `UPDATE users SET username = '${username}', updated_at = NOW() WHERE id = ${userId}`;
+
+                                    database.db.query(usernameUpdateQuery, (updateErr, updateRows, updateResult) => {
+                                        if (updateErr) {
+                                            res.status(500).json({
+                                                successful: false,
+                                                message: updateErr
+                                            });
+                                        }
+                                        else {
+                                            res.status(200).json({ // response if the username was successfully updated
+                                                successful: true,
+                                                message: "Successfully updated username."
+                                            });
+                                        }
+                                    });
+                                }
                             }
                         });
                     }
