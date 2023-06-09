@@ -397,7 +397,7 @@ const updateAppointment = (req, res, next) => { // can only update schedule (res
                                     else if (psychSchedRows.length > 0) { // checks if the psychologist already has an existing reservation based on the given date and time
                                         res.status(400).json({
                                             sucessful: false,
-                                            message: "The psychologist you selected already has an appointment set on that date and time."
+                                            message: "A patient already has an existing appointment set with the psychologist you selected based on the given date and time."
                                         });
                                     }
                                     else {
