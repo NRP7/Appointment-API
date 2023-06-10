@@ -221,68 +221,120 @@ const bookAppointment = (req, res, next) => {
 const viewPsychologistAppointments = (req, res, next) => { // separate view all appointments for patient and psych Question: paanong separate? => RESOLVED
     let userId = req.params.id;
 
-    let appointmentSelectQuery = `SELECT CONCAT(first_name, ' ', last_name) AS psychologist, (SELECT CONCAT(first_name, ' ', last_name) AS Patient FROM users u WHERE u.id = s.patient_id) AS patient, DATE_FORMAT(reserved_at, '%Y-%m-%d') AS 'appointment_date', TIME_FORMAT(reserved_at, '%H:%i') AS 'appointment_time', st.name AS status, DATE_FORMAT(s.created_at, '%Y-%m-%d %H:%i:%s') AS created_at, DATE_FORMAT(s.updated_at, '%Y-%m-%d %H:%i:%s') AS updated_at FROM schedules s
-    JOIN users u ON s.psychologist_id = u.id
-    JOIN statuses st ON s.status_id = st.id
-    WHERE u.id = ${userId}`;
+    let psychologistSelectQuery = `SELECT CONCAT(first_name, ' ', last_name) AS psychologist, role FROM users u WHERE u.id = ${userId}`;
 
-    database.db.query(appointmentSelectQuery, (selectErr, selectRows, selectResult) => {
+    database.db.query(psychologistSelectQuery, (selErr, selRows, selResult) => {
 
-        if (selectErr) {
+        if (selErr) {
             res.status(500).json({
                 successful: false,
-                message: selectErr
+                message: selErr
             });
         }
-        else if (selectRows.length == 0) { // checks if there are no appointments in the DB or the DB table is empty
-            res.status(200).json({
-                successful: true,
-                message:"The psychologist has no appointment available in the database."
+        else if (selRows.length == 0) { // checks if the psychologist does not exists in the DB
+            res.status(400).json({
+                successful: false,
+                message:"The user does not exist."
+            });
+        }
+        else if (selRows[0].role != 0) { // checks if the user is not a psychologist
+            res.status(400).json({
+                successful: false,
+                message:"The user is not a psychologist."
             });
         }
         else {
-            res.status(200).json({ // response if fetching the psychologist's appointment/s was successful
-                successful: true,
-                message: "Successfully got all the appointments",
-                data: selectRows
+
+            let appointmentSelectQuery = `SELECT (SELECT CONCAT(first_name, ' ', last_name) FROM users u WHERE u.id = s.patient_id) AS patient, DATE_FORMAT(reserved_at, '%Y-%m-%d') AS 'appointment_date', TIME_FORMAT(reserved_at, '%H:%i') AS 'appointment_time', st.name AS status, DATE_FORMAT(s.created_at, '%Y-%m-%d %H:%i:%s') AS created_at, DATE_FORMAT(s.updated_at, '%Y-%m-%d %H:%i:%s') AS updated_at FROM schedules s
+            JOIN users u ON s.psychologist_id = u.id
+            JOIN statuses st ON s.status_id = st.id
+            WHERE u.id = ${userId}`;
+
+            database.db.query(appointmentSelectQuery, (selectErr, selectRows, selectResult) => {
+
+                if (selectErr) {
+                    res.status(500).json({
+                        successful: false,
+                        message: selectErr
+                    });
+                }
+                else if (selectRows.length == 0) { // checks if there are no appointments in the DB or the DB table is empty
+                    res.status(200).json({
+                        successful: true,
+                        message:"The psychologist has no appointment available in the database."
+                    });
+                }
+                else {
+                    res.status(200).json({ // response if fetching the psychologist's appointment/s was successful
+                        successful: true,
+                        message: "Successfully got all the appointments",
+                        psychologist: selRows[0].psychologist,
+                        total_appointment_count: selectRows.length,
+                        data: selectRows
+                    });
+                }
             });
         }
     });
-
 }
 
 
 const viewPatientAppointments = (req, res, next) => { // separate view all appointments for patient and psych Question: paanong separate? => RESOLVED
     let userId = req.params.id;
 
-    let appointmentSelectQuery = `SELECT CONCAT(first_name, ' ', last_name) AS patient, (SELECT CONCAT(first_name, ' ', last_name) AS Psychologist FROM users u WHERE u.id = s.psychologist_id) AS psychologist, DATE_FORMAT(reserved_at, '%Y-%m-%d') AS 'appointment_date', TIME_FORMAT(reserved_at, '%H:%i') AS 'appointment_time', st.name AS status, DATE_FORMAT(s.created_at, '%Y-%m-%d %H:%i:%s') AS created_at, DATE_FORMAT(s.updated_at, '%Y-%m-%d %H:%i:%s') AS updated_at FROM schedules s
-    JOIN users u ON s.patient_id = u.id
-    JOIN statuses st ON s.status_id = st.id
-    WHERE u.id = ${userId}`;
+    let patientSelectQuery = `SELECT CONCAT(first_name, ' ', last_name) AS patient, role FROM users u WHERE u.id = ${userId}`;
 
-    database.db.query(appointmentSelectQuery, (selectErr, selectRows, selectResult) => {
+    database.db.query(patientSelectQuery, (selErr, selRows, selResult) => {
 
-        if (selectErr) {
+        if (selErr) {
             res.status(500).json({
                 successful: false,
-                message: selectErr
+                message: selErr
             });
         }
-        else if (selectRows.length == 0) { // checks if there are no appointments in the DB or the DB table is empty
-            res.status(200).json({
-                successful: true,
-                message:"No appointment available in the database."
+        else if (selRows.length == 0) { // checks if the patient does not exists in the DB
+            res.status(400).json({
+                successful: false,
+                message:"The user does not exist."
+            });
+        }
+        else if (selRows[0].role != 1) { // checks if the user is not a patient
+            res.status(400).json({
+                successful: false,
+                message:"The user is not a patient."
             });
         }
         else {
-            res.status(200).json({ // response if fetching the patient's appointment/s was successful
-                successful: true,
-                message: "Successfully got all the appointments",
-                data: selectRows
+            let appointmentSelectQuery = `SELECT (SELECT CONCAT(first_name, ' ', last_name) FROM users u WHERE u.id = s.psychologist_id) AS psychologist, DATE_FORMAT(reserved_at, '%Y-%m-%d') AS 'appointment_date', TIME_FORMAT(reserved_at, '%H:%i') AS 'appointment_time', st.name AS status, DATE_FORMAT(s.created_at, '%Y-%m-%d %H:%i:%s') AS created_at, DATE_FORMAT(s.updated_at, '%Y-%m-%d %H:%i:%s') AS updated_at FROM schedules s
+            JOIN users u ON s.patient_id = u.id
+            JOIN statuses st ON s.status_id = st.id
+            WHERE u.id = ${userId}`;
+
+            database.db.query(appointmentSelectQuery, (selectErr, selectRows, selectResult) => {
+
+                if (selectErr) {
+                    res.status(500).json({
+                        successful: false,
+                        message: selectErr
+                    });
+                }
+                else if (selectRows.length == 0) { // checks if there are no appointments in the DB or the DB table is empty
+                    res.status(200).json({
+                        successful: true,
+                        message:"The patient has no appointment available in the database."
+                    });
+                }
+                else {
+                    res.status(200).json({ // response if fetching the patient's appointment/s was successful
+                        successful: true,
+                        message: "Successfully got all the appointments",
+                        patient: selRows[0].patient,
+                        data: selectRows
+                    });
+                }
             });
         }
     });
-
 }
 
 
